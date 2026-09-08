@@ -33,13 +33,21 @@ export function moveBody(map,body,dx,dy){
   const steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/6));
   for(let i=0;i<steps;i++){if(walkable(map,body.x+dx/steps,body.y,body.r||12))body.x+=dx/steps;if(walkable(map,body.x,body.y+dy/steps,body.r||12))body.y+=dy/steps;}
 }
-export const rarities=[{name:'普通',color:'#b8c8bb',mult:1},{name:'精良',color:'#73cbb1',mult:1.3},{name:'稀有',color:'#82b8fa',mult:1.7},{name:'史诗',color:'#cc98eb',mult:2.2}];
-export const weaponInfo={sword:{name:'长剑',symbol:'†',range:76,delay:.48,speed:1,power:1},bow:{name:'猎弓',symbol:'⌁',range:330,delay:.62,speed:1.04,power:.87},staff:{name:'法杖',symbol:'✧',range:280,delay:.8,speed:.97,power:1.2}};
+export const rarities=[{name:'普通',color:'#b8c8bb',mult:1},{name:'精良',color:'#73cbb1',mult:1.3},{name:'稀有',color:'#82b8fa',mult:1.7},{name:'史诗',color:'#cc98eb',mult:2.2},{name:'黄金限定',color:'#ffd66e',mult:4.5}];
+export const weaponInfo={sword:{name:'长剑',symbol:'†',range:76,delay:.48,speed:1,power:1.08},bow:{name:'猎弓',symbol:'⌁',range:330,delay:.62,speed:1.04,power:.87},staff:{name:'法杖',symbol:'✧',range:280,delay:.8,speed:.97,power:1.2}};
 export function makeItem(floor=1,forced=null,rng=Math.random){
   const roll=rng(),rarity=forced??(roll<.08?3:roll<.3?2:roll<.65?1:0),slot=['weapon','armor','ring'][Math.floor(rng()*3)],kind=slot==='weapon'?['sword','bow','staff'][Math.floor(rng()*3)]:null,m=rarities[rarity].mult;
   const item={id:Math.floor(rng()*1e12).toString(36),slot,kind,rarity,attack:0,armor:0,crit:0,leech:0};
   if(slot==='weapon')item.attack=Math.round((9+floor*5)*m);if(slot==='armor')item.armor=Math.round((2+floor*2)*m);if(slot==='ring'){item.crit=Math.round((4+floor*2)*m);if(rarity>=2)item.leech=3+floor;}
   item.name=['旧誓','苔影','星陨','永夜'][rarity]+(slot==='weapon'?weaponInfo[kind].name:slot==='armor'?'胸甲':'指环');return item;
+}
+export function makeGoldenItem(floor=1,rng=Math.random){
+  const slot=['weapon','armor','ring'][Math.floor(rng()*3)],kind=slot==='weapon'?['sword','bow','staff'][Math.floor(rng()*3)]:null;
+  const item={id:Math.floor(rng()*1e12).toString(36),slot,kind,rarity:4,golden:true,shopOnly:true,attack:0,armor:0,crit:0,leech:0,shopPrice:360+(floor-1)*110};
+  if(slot==='weapon'){item.attack=45+floor*18;item.crit=8+floor*2;item.leech=4+floor;item.name='黄金·'+({sword:'裁决长剑',bow:'逐日猎弓',staff:'星铸法杖'}[kind]);}
+  if(slot==='armor'){item.attack=20+floor*8;item.armor=16+floor*6;item.crit=5+floor;item.name='黄金·不灭胸甲';}
+  if(slot==='ring'){item.attack=28+floor*10;item.crit=14+floor*3;item.leech=7+floor*2;item.name='黄金·王权指环';}
+  return item;
 }
 export function playerStats(player){
   let attack=9+player.level*3+(player.bonusAttack||0),armor=0,crit=8,leech=0;

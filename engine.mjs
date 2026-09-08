@@ -2,9 +2,17 @@ export const TILE=40, COLS=26, ROWS=18;
 export const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 export const center=(x,y)=>({x:x*TILE+TILE/2,y:y*TILE+TILE/2});
-export function createMap(floor=1){
+export function createMap(floor=1,room='ruins'){
   const map=Array.from({length:ROWS},(_,y)=>Array.from({length:COLS},(_,x)=>x===0||y===0||x===COLS-1||y===ROWS-1?1:0));
-  const blocks=floor===1?[[6,5,2,3],[17,5,2,3],[6,12,2,2],[17,12,2,2]]:floor===2?[[5,4,3,2],[18,4,3,2],[5,11,3,3],[18,11,3,3],[11,8,4,2]]:[[5,5,2,3],[19,5,2,3],[5,12,2,2],[19,12,2,2],[11,5,4,1]];
+  const layouts={
+    ruins:floor===1?[[6,5,2,3],[17,5,2,3],[6,12,2,2],[17,12,2,2]]:floor===2?[[5,4,3,2],[18,4,3,2],[5,11,3,3],[18,11,3,3],[11,8,4,2]]:[[5,5,2,3],[19,5,2,3],[5,12,2,2],[19,12,2,2],[11,5,4,1]],
+    garden:[[5,4,2,2],[19,4,2,2],[5,11,2,2],[19,11,2,2],[12,6,2,1],[12,11,2,1],[8,8,1,2],[17,8,1,2]],
+    forge:[[4,5,4,1],[18,5,4,1],[4,12,4,1],[18,12,4,1],[12,8,2,2],[8,8,1,2],[17,8,1,2]],
+    library:[[5,4,1,4],[9,4,1,4],[17,10,1,4],[21,10,1,4],[12,5,2,1],[14,12,2,1]],
+    sanctum:[[6,5,2,2],[18,5,2,2],[6,11,2,2],[18,11,2,2],[12,8,2,2]],
+    observatory:[[12,4,2,2],[7,8,2,2],[19,8,2,2],[12,11,2,2],[5,5,1,1],[20,5,1,1]]
+  };
+  const blocks=layouts[room]||layouts.ruins;
   for(const [x,y,w,h] of blocks)for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)map[j][i]=1;
   return map;
 }
@@ -40,5 +48,6 @@ export function playerStats(player){
   return {attack,armor,crit:Math.min(crit,60),leech,weapon:weaponInfo[player.equipment.weapon?.kind||'sword']};
 }
 export function makePlayer(kind='sword'){
-  return {...center(12,14),r:12,hp:120,maxHp:120,level:1,xp:0,xpGoal:35,gold:0,potions:3,kills:0,bonusAttack:0,equipment:{weapon:{id:'starter',name:'旅人'+weaponInfo[kind].name,slot:'weapon',kind,rarity:0,attack:9,armor:0,crit:0,leech:0},armor:null,ring:null},inventory:[],cd:{attack:0,dash:0,spin:0,frost:0,potion:0},invuln:0,facing:-Math.PI/2};
+  const starter={id:'starter',name:'旅人'+weaponInfo[kind].name,slot:'weapon',kind,rarity:0,attack:9,armor:0,crit:0,leech:0};
+  return {...center(12,14),r:12,hp:120,maxHp:120,level:1,xp:0,xpGoal:35,gold:0,potions:3,elixirs:{haste:0,fury:0,ward:0},buffs:{haste:0,fury:0,ward:0},kills:0,bonusAttack:0,weapons:[starter,null],weaponIndex:0,equipment:{weapon:starter,armor:null,ring:null},inventory:[],cd:{attack:0,dash:0,spin:0,frost:0,potion:0},invuln:0,facing:-Math.PI/2};
 }

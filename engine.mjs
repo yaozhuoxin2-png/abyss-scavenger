@@ -45,9 +45,9 @@ export function playerStats(player){
   let attack=9+player.level*3+(player.bonusAttack||0),armor=0,crit=8,leech=0;
   for(const item of Object.values(player.equipment)){if(!item)continue;attack+=item.attack;armor+=item.armor;crit+=item.crit;leech+=item.leech;}
   armor+=player.bonusArmor||0;crit+=player.bonusCrit||0;leech+=player.bonusLeech||0;
-  return {attack,armor,crit:Math.min(crit,60),leech,weapon:weaponInfo[player.equipment.weapon?.kind||'sword']};
+  return {attack,armor,crit:Math.min(crit,60),leech,weapon:weaponInfo[player.equipment.weapon?.kind||'sword'],mana:player.mana,maxMana:player.maxMana,manaRegen:player.manaRegen};
 }
 export function makePlayer(kind='sword'){
   const starter={id:'starter',name:'旅人'+weaponInfo[kind].name,slot:'weapon',kind,rarity:0,attack:9,armor:0,crit:0,leech:0};
-  return {...center(12,14),r:12,hp:120,maxHp:120,level:1,xp:0,xpGoal:35,gold:0,potions:3,elixirs:{haste:0,fury:0,ward:0},buffs:{haste:0,fury:0,ward:0},kills:0,bonusAttack:0,weapons:[starter,null],weaponIndex:0,equipment:{weapon:starter,armor:null,ring:null},inventory:[],cd:{attack:0,dash:0,spin:0,frost:0,potion:0},invuln:0,facing:-Math.PI/2};
+  return {...center(12,14),r:12,hp:120,maxHp:120,mana:70,maxMana:70,manaRegen:4,level:1,xp:0,xpGoal:55,gold:0,potions:3,elixirs:{haste:0,fury:0,ward:0},buffs:{haste:0,fury:0,ward:0},talents:[],nextAttackBonus:0,comboTarget:null,comboBonus:0,comboTimer:0,secondWindUsed:false,kills:0,bonusAttack:0,bonusArmor:0,bonusCrit:0,bonusLeech:0,bonusSpeed:0,weapons:[starter,null],weaponIndex:0,equipment:{weapon:starter,armor:null,ring:null},inventory:[],cd:{attack:0,dash:0,spin:0,frost:0,potion:0},invuln:0,facing:-Math.PI/2};
 }

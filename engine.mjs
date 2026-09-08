@@ -49,5 +49,5 @@ export function playerStats(player){
 }
 export function makePlayer(kind='sword'){
   const starter={id:'starter',name:'旅人'+weaponInfo[kind].name,slot:'weapon',kind,rarity:0,attack:9,armor:0,crit:0,leech:0};
-  return {...center(12,14),r:12,hp:120,maxHp:120,mana:70,maxMana:70,manaRegen:4,level:1,xp:0,xpGoal:55,gold:0,potions:3,elixirs:{haste:0,fury:0,ward:0},buffs:{haste:0,fury:0,ward:0},talents:[],nextAttackBonus:0,comboTarget:null,comboBonus:0,comboTimer:0,secondWindUsed:false,kills:0,bonusAttack:0,bonusArmor:0,bonusCrit:0,bonusLeech:0,bonusSpeed:0,weapons:[starter,null],weaponIndex:0,equipment:{weapon:starter,armor:null,ring:null},inventory:[],cd:{attack:0,dash:0,spin:0,frost:0,potion:0},invuln:0,facing:-Math.PI/2};
+  return {...center(12,14),r:12,hp:120,maxHp:120,mana:80,maxMana:80,manaRegen:1.6,level:1,xp:0,xpGoal:55,gold:0,potions:3,elixirs:{haste:0,fury:0,ward:0},buffs:{haste:0,fury:0,ward:0},talents:[],nextAttackBonus:0,comboTarget:null,comboBonus:0,comboTimer:0,secondWindUsed:false,kills:0,bonusAttack:0,bonusArmor:0,bonusCrit:0,bonusLeech:0,bonusSpeed:0,weapons:[starter,null],weaponIndex:0,equipment:{weapon:starter,armor:null,ring:null},inventory:[],cd:{attack:0,dash:0,spin:0,frost:0,potion:0},invuln:0,facing:-Math.PI/2};
 }

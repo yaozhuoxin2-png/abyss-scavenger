@@ -35,6 +35,7 @@ export function moveBody(map,body,dx,dy){
 }
 export const rarities=[{name:'普通',color:'#b8c8bb',mult:1},{name:'精良',color:'#73cbb1',mult:1.3},{name:'稀有',color:'#82b8fa',mult:1.7},{name:'史诗',color:'#cc98eb',mult:2.2},{name:'黄金限定',color:'#ffd66e',mult:4.5}];
 export const weaponInfo={sword:{name:'长剑',symbol:'†',range:76,delay:.48,speed:1,power:1.08},bow:{name:'猎弓',symbol:'⌁',range:330,delay:.62,speed:1.04,power:.87},staff:{name:'法杖',symbol:'✧',range:280,delay:.8,speed:.97,power:1.2}};
+export function enemyScale(floor=1){const depth=Math.max(0,floor-1);return {health:1+depth*.7+depth*depth*.2,attack:1+depth*.22+depth*depth*.04};}
 export function makeItem(floor=1,forced=null,rng=Math.random){
   const roll=rng(),rarity=forced??(roll<.08?3:roll<.3?2:roll<.65?1:0),slot=['weapon','armor','ring'][Math.floor(rng()*3)],kind=slot==='weapon'?['sword','bow','staff'][Math.floor(rng()*3)]:null,m=rarities[rarity].mult;
   const item={id:Math.floor(rng()*1e12).toString(36),slot,kind,rarity,attack:0,armor:0,crit:0,leech:0};

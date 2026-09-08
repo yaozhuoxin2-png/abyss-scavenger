@@ -43,7 +43,7 @@ export function makeItem(floor=1,forced=null,rng=Math.random){
 }
 export function makeGoldenItem(floor=1,rng=Math.random){
   const slot=['weapon','armor','ring'][Math.floor(rng()*3)],kind=slot==='weapon'?['sword','bow','staff'][Math.floor(rng()*3)]:null;
-  const item={id:Math.floor(rng()*1e12).toString(36),slot,kind,rarity:4,golden:true,shopOnly:true,attack:0,armor:0,crit:0,leech:0,shopPrice:360+(floor-1)*110};
+  const item={id:Math.floor(rng()*1e12).toString(36),slot,kind,rarity:4,golden:true,shopOnly:true,attack:0,armor:0,crit:0,leech:0,shopPrice:360};
   if(slot==='weapon'){item.attack=45+floor*18;item.crit=8+floor*2;item.leech=4+floor;item.name='黄金·'+({sword:'裁决长剑',bow:'逐日猎弓',staff:'星铸法杖'}[kind]);}
   if(slot==='armor'){item.attack=20+floor*8;item.armor=16+floor*6;item.crit=5+floor;item.name='黄金·不灭胸甲';}
   if(slot==='ring'){item.attack=28+floor*10;item.crit=14+floor*3;item.leech=7+floor*2;item.name='黄金·王权指环';}

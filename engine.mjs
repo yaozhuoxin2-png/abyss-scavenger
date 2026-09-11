@@ -55,7 +55,7 @@ export function makeGoldenItem(floor=1,rng=Math.random){
 }
 export function makeSupremeWeapon(floor=1,rng=Math.random){
   const kind=['sword','bow','staff'][Math.floor(rng()*3)],names={sword:'至高·终焉裁决',bow:'至高·破晓神弓',staff:'至高·万象权杖'};
-  return {id:Math.floor(rng()*1e12).toString(36),name:names[kind],slot:'weapon',kind,rarity:5,supreme:true,shopOnly:true,attack:90+floor*25,armor:0,crit:14+floor*2,leech:8+floor,shopPrice:1280};
+  return {id:Math.floor(rng()*1e12).toString(36),name:names[kind],slot:'weapon',kind,rarity:5,supreme:true,shopOnly:true,attack:90+floor*25,armor:0,crit:14+floor*2,leech:8+floor,shopPrice:3200};
 }
 export function makeSupremeItem(floor=1,slot=null,rng=Math.random){
   const selected=slot||['weapon','armor','ring'][Math.floor(rng()*3)];

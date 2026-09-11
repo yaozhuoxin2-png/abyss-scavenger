@@ -17,16 +17,19 @@ export function createMap(floor=1,room='ruins'){
   return map;
 }
 export function walkable(map,x,y,r=12){
-  for(const dx of [-r,r])for(const dy of [-r,r]){const cx=Math.floor((x+dx)/TILE),cy=Math.floor((y+dy)/TILE);if(!map[cy]||map[cy][cx]!==0)return false;}return true;
+  if(!Number.isFinite(x)||!Number.isFinite(y)||!Number.isFinite(r)||r<0)return false;
+  const left=Math.floor((x-r)/TILE),right=Math.floor((x+r)/TILE),top=Math.floor((y-r)/TILE),bottom=Math.floor((y+r)/TILE);
+  for(let cy=top;cy<=bottom;cy++)for(let cx=left;cx<=right;cx++)if(map[cy]?.[cx]!==0)return false;
+  return true;
 }
-export function findPath(map,start,end){
+export function findPath(map,start,end,r=start.r||12){
   const sx=Math.floor(start.x/TILE),sy=Math.floor(start.y/TILE),tx=Math.floor(end.x/TILE),ty=Math.floor(end.y/TILE);
   if(!map[ty]||map[ty][tx]!==0||!map[sy]||map[sy][sx]!==0)return [];
-  if(sx===tx&&sy===ty)return walkable(map,end.x,end.y)?[{...end}]:[center(tx,ty)];
+  if(sx===tx&&sy===ty)return walkable(map,end.x,end.y,r)?[{...end}]:[];
   const startKey=sy*COLS+sx,targetKey=ty*COLS+tx,queue=[startKey],prev=new Map([[startKey,null]]);
-  for(let n=0;n<queue.length;n++){const key=queue[n],x=key%COLS,y=Math.floor(key/COLS);if(key===targetKey)break;for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,k=ny*COLS+nx;if(map[ny]?.[nx]===0&&!prev.has(k)){prev.set(k,key);queue.push(k);}}}
+  for(let n=0;n<queue.length;n++){const key=queue[n],x=key%COLS,y=Math.floor(key/COLS);if(key===targetKey)break;for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,k=ny*COLS+nx,pos=center(nx,ny);if(walkable(map,pos.x,pos.y,r)&&!prev.has(k)){prev.set(k,key);queue.push(k);}}}
   if(!prev.has(targetKey))return [];
-  const result=[];for(let key=targetKey;key!==startKey;key=prev.get(key))result.push(center(key%COLS,Math.floor(key/COLS)));result.reverse();if(walkable(map,end.x,end.y))result.push({...end});return result;
+  const result=[];for(let key=targetKey;key!==startKey;key=prev.get(key))result.push(center(key%COLS,Math.floor(key/COLS)));result.reverse();if(walkable(map,end.x,end.y,r))result.push({...end});return result;
 }
 export function lineOfSight(map,a,b){const d=distance(a,b),n=Math.max(1,Math.ceil(d/10));for(let i=1;i<=n;i++)if(!walkable(map,a.x+(b.x-a.x)*i/n,a.y+(b.y-a.y)*i/n,2))return false;return true;}
 export function moveBody(map,body,dx,dy){

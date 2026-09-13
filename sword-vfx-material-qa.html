@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>王权回锋 · 素材驱动 VFX 对比</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#05070a;color:#e7dfd2;font-family:"Microsoft YaHei",sans-serif;overflow:hidden}
+    main{position:relative;width:min(100vw,1040px);height:min(100vh,650px);margin:auto;background:radial-gradient(circle at 50% 48%,#18232d 0,#0b1118 58%,#05070a 100%);box-shadow:0 0 80px #000}
+    main:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#8ca8b00a 1px,transparent 1px),linear-gradient(90deg,#8ca8b00a 1px,transparent 1px);background-size:40px 40px}
+    canvas{position:absolute;inset:0;width:100%;height:100%}.head{position:absolute;left:0;right:0;top:28px;text-align:center}.head h1{margin:0 0 8px;font-size:22px;letter-spacing:.22em}.head p{margin:0;color:#8798a4;font-size:13px}
+    .panel{position:absolute;top:105px;width:46%;height:455px;border:1px solid #8297a526;border-radius:10px;background:#080d1268;pointer-events:none}.old{left:2.5%}.new{right:2.5%;border-color:#63d9ff48;background:#09121a82;box-shadow:inset 0 0 45px #43d4ff08}.panel h2{text-align:center;margin:22px 0 0;font-size:17px;letter-spacing:.14em}.panel small{display:block;text-align:center;margin-top:8px;color:#82909b}.new h2{color:#dff9ff}.badge{position:absolute;top:13px;right:14px;padding:6px 9px;border:1px solid #6bdcff45;border-radius:5px;color:#8ee9ff;font-size:11px;background:#061016c7}
+    #stats{position:absolute;bottom:23px;left:0;right:0;text-align:center;color:#7e919d;font-size:12px}
+  </style>
+</head>
+<body><main><canvas id="fx" width="1040" height="650"></canvas><div class="head"><h1>王权回锋 · 垂直切片</h1><p>相同技能时间轴与绘制预算，比较素材密度和运动细节</p></div><section class="panel old"><h2>旧版 · 程序化剑光</h2><small>规则轮廓与数学噪声</small></section><section class="panel new"><h2>新版 · 素材驱动剑光</h2><small>手绘图集＋法线＋流动＋扭曲＋Flipbook</small><span class="badge" id="asset-state">加载素材…</span></section><div id="stats"></div></main>
+<script type="module">
+  import {createWebGLVfxRenderer} from './webgl-vfx.mjs';import {createCombatVfxSystem} from './combat-vfx.mjs';
+  const canvas=document.querySelector('#fx'),stats=document.querySelector('#stats'),assetState=document.querySelector('#asset-state'),renderer=createWebGLVfxRenderer(canvas),vfx=createCombatVfxSystem(renderer);
+  function frame(ms){const time=ms/1000,cycle=time%2.6,p=cycle/2.6,life=1-p,rotation=-.8+p*1.55;renderer.beginFrame({time});
+    renderer.swordRibbon(260,350,161,rotation,'#251d68',.68*life,time);renderer.swordRibbon(260,350,149,rotation,'#795dff',.7*life,time+.2);renderer.swordRibbon(260,350,137,rotation,'#f5fdff',.66*life,time+.4);renderer.bladeFlash(260+Math.cos(rotation)*118,350+Math.sin(rotation)*74,24,rotation,'#bff5ff',.65*life,time);
+    vfx.render({type:'heroSkillSignature',kind:'sword',name:'spin',quality:3,x:920,y:350,ox:780,oy:350,angle:0,life,max:1},time);const result=renderer.flush();assetState.textContent=renderer.assetsReady?'5/5 素材已装载':'加载素材…';stats.textContent=`WebGL2 · ${result.instances} 实例 · ${result.drawCalls} 次绘制`;requestAnimationFrame(frame);}
+  requestAnimationFrame(frame);
+</script></body></html>

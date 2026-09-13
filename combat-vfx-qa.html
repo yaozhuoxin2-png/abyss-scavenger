@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>深渊拾荒者 · VFX 材质实验室</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#07090d;color:#d8cfbc;font-family:"Microsoft YaHei",sans-serif;overflow:hidden}
+    main{position:relative;width:min(100vw,1040px);height:min(100vh,720px);margin:auto;background:radial-gradient(circle at 50% 45%,#182028 0,#0b1016 58%,#05070a 100%);box-shadow:0 0 70px #000}
+    main:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#7992a008 1px,transparent 1px),linear-gradient(90deg,#7992a008 1px,transparent 1px);background-size:40px 40px}
+    canvas{position:absolute;inset:0;width:100%;height:100%}.label{position:absolute;transform:translate(-50%,-50%);text-align:center;pointer-events:none;text-shadow:0 2px 8px #000;font-size:13px;letter-spacing:.16em}.label b{display:block;color:#f1e6ce;font-size:15px;margin-bottom:136px}.label span{color:#8d9aa5}
+    #stats{position:absolute;right:14px;top:12px;color:#8ea3af;font-size:12px;background:#05080bb8;border:1px solid #758a9830;padding:8px 10px;border-radius:6px}
+  </style>
+</head>
+<body>
+<main id="stage"><canvas id="fx" width="1040" height="720"></canvas><div id="stats"></div></main>
+<script type="module">
+  import {createWebGLVfxRenderer} from './webgl-vfx.mjs';
+  import {createCombatVfxSystem} from './combat-vfx.mjs';
+  const canvas=document.querySelector('#fx'),stage=document.querySelector('#stage'),stats=document.querySelector('#stats');
+  const renderer=createWebGLVfxRenderer(canvas),vfx=createCombatVfxSystem(renderer);
+  const samples=[
+    {kind:'staff',name:'spin',label:'法师 · 蚀星飞梭',color:'#9167dc',accent:'#f5d9ff'},
+    {kind:'staff',name:'frost',label:'法师 · 星界坍缩',color:'#7451bb',accent:'#d9c5ff'},
+    {kind:'sword',name:'spin',label:'剑士 · 断岳回锋',color:'#ff4b2e',accent:'#fff2b2'},
+    {kind:'sword',name:'frost',label:'剑士 · 王权断层',color:'#ff382d',accent:'#fff0a6'},
+    {kind:'bow',name:'spin',label:'弓手 · 逐风贯星',color:'#42ae85',accent:'#ddffc7'},
+    {kind:'bow',name:'frost',label:'弓手 · 月蚀猎场',color:'#4ebf98',accent:'#d5ffe4'}
+  ];
+  const points=samples.map((sample,i)=>({x:i%2?780:260,y:145+Math.floor(i/2)*220,...sample}));
+  for(const point of points){const label=document.createElement('div');label.className='label';label.style.left=point.x/10.4+'%';label.style.top=point.y/7.2+'%';label.innerHTML=`<b>${point.label}</b><span>材质时间轴实时预览</span>`;stage.append(label);}
+  function frame(ms){
+    const time=ms/1000,cycle=time%2.8,progress=cycle<.55?cycle/.55:(cycle-.55)/2.25,type=cycle<.55?'heroSkillCast':'heroSkillSignature',life=1-progress;
+    renderer.beginFrame({time});
+    for(const point of points){const melee=point.kind==='sword',ox=melee?point.x:point.x-145,x=melee?point.x+145:point.x;vfx.render({type,kind:point.kind,name:point.name,quality:3,x,y:point.y,ox,oy:point.y+8,angle:0,life,max:1,color:point.color,accent:point.accent,marks:[{x:point.x-70,y:point.y+10},{x:point.x,y:point.y-35},{x:point.x+70,y:point.y+10}]},time);}
+    const result=renderer.flush();stats.textContent=renderer.available?`WebGL2 · ${result.instances} 实例 · ${result.drawCalls} 次绘制`:'WebGL 不可用';requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>

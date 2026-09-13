@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>法师 · 素材驱动 VFX 预览</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#05070d;color:#eaf7ff;font-family:"Microsoft YaHei",sans-serif;overflow:hidden}
+    main{position:relative;width:min(100vw,1100px);height:min(100vh,680px);margin:auto;overflow:hidden;background:radial-gradient(ellipse at 50% 46%,#1a2941 0,#0a111e 51%,#04060b 100%);box-shadow:0 0 85px #000}
+    main:before{content:"";position:absolute;z-index:0;inset:0;background:linear-gradient(115deg,transparent 47%,#9ad4f80b 50%,transparent 53%),repeating-linear-gradient(20deg,#d9f7ff06 0 1px,transparent 1px 38px);pointer-events:none}
+    canvas{position:absolute;z-index:2;inset:0;width:100%;height:100%;pointer-events:none;filter:contrast(1.24) saturate(1.35)}.head{position:absolute;z-index:3;top:27px;left:0;right:0;text-align:center;pointer-events:none}.head h1{margin:0 0 8px;font-size:22px;letter-spacing:.24em}.head p{margin:0;color:#98afc3;font-size:13px}.skill{position:absolute;z-index:3;top:112px;width:44%;height:485px;border:1px solid #a6ecff48;border-radius:14px;background:linear-gradient(145deg,#0d16220a,#06101a03);box-shadow:inset 0 0 42px #6dc9ff05;pointer-events:none}.skill.left{left:3%}.skill.right{right:3%}.skill h2{margin:27px 0 7px;text-align:center;font-size:19px;letter-spacing:.13em;color:#f1fdff;text-shadow:0 2px 8px #000}.skill p{margin:0;text-align:center;color:#b4d6e9;font-size:12px;text-shadow:0 2px 6px #000}.badge{position:absolute;z-index:3;right:17px;top:15px;border:1px solid #72dfff55;border-radius:6px;padding:6px 9px;background:#07111bd7;color:#9cecff;font-size:11px}#stats{position:absolute;z-index:3;bottom:27px;left:0;right:0;text-align:center;color:#b1d2e6;font-size:12px;text-shadow:0 2px 6px #000}
+  </style>
+</head>
+<body><main>
+  <canvas id="fx" width="1100" height="680"></canvas>
+  <header class="head"><h1>法师 · 素材驱动垂直切片</h1><p>每一帧均来自独立手绘图集，并以流动、法线、扭曲与分层合成驱动</p></header>
+  <section class="skill left"><h2>蚀星飞梭</h2><p>晶体星核 · 贯穿冰轨 · 残留冰痕 · 终点冰爆</p></section>
+  <section class="skill right"><h2>星界坍缩</h2><p>不规则星座囚笼 · 冰晶连线 · 向心棱镜坍缩</p></section>
+  <span id="asset-state" class="badge">加载素材…</span><div id="stats"></div>
+</main>
+<script type="module">
+  import {createWebGLVfxRenderer} from './webgl-vfx.mjs?v=collapse-sequence-1';import {createCombatVfxSystem} from './combat-vfx.mjs?v=collapse-sequence-1';
+  const canvas=document.querySelector('#fx'),stats=document.querySelector('#stats'),assetState=document.querySelector('#asset-state'),renderer=createWebGLVfxRenderer(canvas),vfx=createCombatVfxSystem(renderer);
+  function drawMage(time){
+    const cycle=time%4.6,casting=cycle<2.35,progress=casting?cycle/2.35:(cycle-2.35)/2.25,stage=casting?'heroSkillCast':'heroSkillSignature';
+    const ox=185,oy=415,x=445,y=325,angle=Math.atan2(y-oy,x-ox);vfx.render({type:stage,kind:'staff',name:'spin',quality:3,width:72,explosionRadius:78,ox,oy,x,y,angle,life:1,max:1},time,{alpha:1,progress});
+    if(!casting)renderer.iceTrailSurface((ox+x)*.5,(oy+y)*.5,Math.hypot(x-ox,y-oy),72,-angle,.72,progress,3);
+    vfx.render({type:stage,kind:'staff',name:'frost',quality:3,ox:825,oy:385,x:825,y:385,angle:0,life:1,max:1},time,{alpha:1,progress});
+    return casting?'慢速展示：蓄力与成形':'慢速展示：命中与余韵';
+  }
+  function frame(ms){const time=ms/1000;renderer.beginFrame({time});const stage=drawMage(time),result=renderer.flush();assetState.textContent=renderer.assetsReady?'12/12 素材已装载':'加载素材…';stats.textContent=`${stage} · WebGL2 · ${result.instances} 实例 · ${result.drawCalls} 次绘制`;requestAnimationFrame(frame);}
+  requestAnimationFrame(frame);
+</script></body></html>

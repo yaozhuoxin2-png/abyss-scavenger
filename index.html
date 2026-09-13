@@ -15,7 +15,7 @@
   <link rel="preload" as="image" href="./enemies-core-v7.png">
   <link rel="preload" as="image" href="./enemies-arcane-v7.png">
   <link rel="preload" as="image" href="./bosses-morph-v7.png">
-  <link rel="stylesheet" href="./style.css?v=8.0-webgl25d-1">
+  <link rel="stylesheet" href="./style.css?v=8.1-mage-material-1">
 </head>
 <body>
   <section id="opening-cg" class="opening-cg" aria-label="游戏背景序章" hidden>
@@ -30,7 +30,7 @@
     </div>
     <div class="opening-controls"><div class="opening-progress"><i id="opening-progress"></i></div><span id="opening-chapter">序章 · 01 / 05</span><button id="skip-opening">跳过序章 <kbd>Space</kbd></button></div>
   </section>
-  <header class="masthead"><a class="brand" href="./"><span class="brand-mark">✦</span><span>深渊拾荒者<small>ABYSS SCAVENGER</small></span></a><div class="top-actions"><span class="version">幽光铸界 · v8.0</span><button id="sound" aria-pressed="false">音效：关</button><button id="help">操作说明 <kbd>?</kbd></button><button id="pause">暂停 <kbd>Esc</kbd></button></div></header>
+  <header class="masthead"><a class="brand" href="./"><span class="brand-mark">✦</span><span>深渊拾荒者<small>ABYSS SCAVENGER</small></span></a><div class="top-actions"><span class="version">幽光铸界 · v8.1</span><button id="sound" aria-pressed="false">音效：关</button><button id="help">操作说明 <kbd>?</kbd></button><button id="pause">暂停 <kbd>Esc</kbd></button></div></header>
   <main>
     <div class="chapter-bar"><div><span class="eyebrow">THE DESCENT</span><h1 id="chapter">第一层 <span>· 苔影遗迹</span></h1></div><div class="depth"><span id="depth1" class="active">01</span><i></i><span id="depth2">02</span><i></i><span id="depth3">03</span><i></i><span id="depth4">04</span><i></i><span id="depth5">05</span><i></i><span id="depth6">06</span></div><div class="objective"><span class="status-dot"></span><span id="objective">准备进入深渊</span></div></div>
     <div class="game-layout">
@@ -41,7 +41,7 @@
     <footer><span>走进深渊，把传说带回来。</span><span>推荐电脑浏览器 · 键盘与鼠标</span></footer>
   </main>
   <dialog id="modal"><div id="modal-content"></div></dialog>
-  <script type="module" src="./game.mjs?v=8.0-webgl25d-1"></script>
+  <script type="module" src="./game.mjs?v=8.2-loot-quality-1"></script>
   <script type="module">if(location.hostname==='127.0.0.1'){const params=new URLSearchParams(location.search);if(params.has('hit-qa'))import('./hit-render-qa.mjs');if(params.has('motion-qa'))import('./motion-qa.mjs');if(params.has('effects-qa'))import('./effects-qa.mjs');}</script>
 </body>
 </html>

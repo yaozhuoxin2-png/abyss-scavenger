@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>地面装备 · 六档品质预览</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#05070d;color:#eef7ff;font-family:"Microsoft YaHei",sans-serif}body{padding:14px 24px;background:radial-gradient(circle at 50% 35%,#1d2838 0,#070b12 54%,#030407 100%)}
+    h1{text-align:center;margin:0 0 4px;letter-spacing:.18em;font-size:22px}p{text-align:center;color:#9bb0c3;margin:0 0 10px;font-size:13px}.grid{display:grid;grid-template-columns:90px repeat(5,minmax(145px,1fr));max-width:1120px;margin:auto;border:1px solid #8cb9d333;border-radius:14px;overflow:hidden;background:#080d15b8}.head,.tier,.cell{min-height:91px;border-right:1px solid #8cb9d31b;border-bottom:1px solid #8cb9d31b;display:flex;align-items:center;justify-content:center}.head{min-height:38px;color:#c9deed;font-size:13px}.tier{flex-direction:column;gap:2px;font-weight:700}.tier small{font-size:10px;color:#8295a8}.cell{position:relative;background:radial-gradient(ellipse at 50% 64%,#25324454 0,transparent 58%);overflow:hidden}.cell:before{content:"";position:absolute;width:66px;height:15px;bottom:10px;border-radius:50%;background:#0009;filter:blur(2px)}img{position:relative;z-index:2;width:108px;height:76px;object-fit:contain;filter:drop-shadow(0 5px 4px #000c) drop-shadow(0 0 5px var(--quality));animation:hover 3.4s ease-in-out infinite}.armor img{width:76px;height:76px}.ring img{width:68px;height:68px}.cell:after{content:"";position:absolute;z-index:1;width:72px;height:23px;bottom:8px;border:1px solid var(--quality);border-radius:50%;opacity:var(--halo);box-shadow:0 0 9px var(--quality);transform:rotate(var(--tilt))}.r4:after,.r5:after{border-width:2px}.r5{background:linear-gradient(180deg,#f2ca4a14,transparent 68%),radial-gradient(ellipse at 50% 64%,#5e421954 0,transparent 58%)}.r5 img{filter:drop-shadow(0 5px 4px #000c) drop-shadow(0 0 11px var(--quality))}.r5:before{box-shadow:0 -66px 30px #f4cb5942}.r0{--quality:#aeb9b7;--halo:0;--tilt:0}.r1{--quality:#79d991;--halo:.35;--tilt:0}.r2{--quality:#62bfff;--halo:.55;--tilt:-4deg}.r3{--quality:#be73ff;--halo:.72;--tilt:5deg}.r4{--quality:#f2bf4d;--halo:.82;--tilt:-7deg}.r5{--quality:#ffe7a0;--halo:1;--tilt:8deg}@keyframes hover{50%{transform:translateY(-3px)}}
+  </style>
+</head>
+<body><h1>地面装备 · 六档品质语言</h1><p>三套独立主体造型 × 六档材质与仪式构件；低品质仍保持同等细节精度</p><div class="grid" id="grid"></div>
+<script>
+  const kinds=[['sword','长剑'],['bow','猎弓'],['staff','法杖'],['armor','胸甲'],['ring','指环']],tiers=[['普通','克制锻造'],['精良','翠色刻印'],['稀有','蓝晶回路'],['史诗','紫色浮符'],['黄金','黑金仪轨'],['至高','王权光柱']];
+  const grid=document.querySelector('#grid');grid.innerHTML='<div class="head"></div>'+kinds.map(([,name])=>`<div class="head">${name}</div>`).join('');
+  tiers.forEach(([name,note],rarity)=>{const body=rarity>=4?'supreme':rarity>=2?'epic':'standard';grid.insertAdjacentHTML('beforeend',`<div class="tier"><span>${name}</span><small>${note}</small></div>`+kinds.map(([kind])=>`<div class="cell ${kind} r${rarity}"><img src="./loot-${kind}-${body}-v8.png" alt="${name}${kind}"></div>`).join(''));});
+</script></body></html>

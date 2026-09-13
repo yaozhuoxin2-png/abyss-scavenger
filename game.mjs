@@ -2,8 +2,8 @@ import {TILE,COLS,ROWS,clamp,distance,center,createMap,walkable,findPath,lineOfS
 import {ANIMATION_CLIPS,createAttackTimeline,advanceAttackTimeline,actionProgress,sampleMotionPose,advanceActorAnimation,clipFrameCount,walkFrameAt} from './animation.mjs';
 import {motionFrame,motionSample} from './sprite-motion.mjs';
 import {drawModernTargeting,drawFrozenStatus} from './vfx-renderer.mjs';
-import {createWebGLVfxRenderer} from './webgl-vfx.mjs?v=8.1-mage-material-13';
-import {createCombatVfxSystem} from './combat-vfx.mjs?v=8.1-mage-material-13';
+import {createWebGLVfxRenderer} from './webgl-vfx.mjs?v=8.2-mage-skill-hotfix-1';
+import {createCombatVfxSystem} from './combat-vfx.mjs?v=8.2-mage-skill-hotfix-1';
 import {OPENING_STORY,drawOpeningStoryFrame} from './opening-cg.mjs';
 const $=id=>document.getElementById(id),canvas=$('arena'),ctx=canvas.getContext('2d'),modal=$('modal');
 // The world remains deterministic Canvas2D gameplay; all combat VFX use a

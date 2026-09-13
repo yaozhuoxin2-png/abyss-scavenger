@@ -1,6 +1,7 @@
 const clamp=(value,min=0,max=1)=>Math.max(min,Math.min(max,value));
 const smooth=(a,b,value)=>{const x=clamp((value-a)/(b-a));return x*x*(3-2*x);};
 const TAU=Math.PI*2;
+function wake(renderer,...args){return typeof renderer.windWake==='function'?renderer.windWake(...args):renderer.trail(...args);}
 function flipbook(renderer,method,x,y,size,rotation,alpha,progress,quality,start=0,end=7){
   const value=start+clamp(progress)*(end-start),frame=Math.floor(value),next=Math.min(end,frame+1),mix=value-frame;
   renderer[method](x,y,size,rotation,alpha*(1-mix),frame,quality);
@@ -107,7 +108,7 @@ function staffSpin(c,stage){
       if(quality>=1)flipbook(r,'assetEclipseEdge',x,y,size*1.035,visualAngle,1.08*a*orbAlpha,frameProgress,quality,0,5);
       r.light(x,y,32+quality*4,'#168dff',(.07+quality*.012)*a,.72,phase);
       if(charge>.02){r.starCore(e.ox,e.oy,11+charge*25,visualAngle+p*2.2,'#e8fdff',.72*a*charge,phase);r.light(e.ox,e.oy,30+charge*22,'#557cff',.11*a*charge,.58,phase);}
-      if(travel>.015){const frozenLength=Math.max(8,length*travel),midX=e.ox+dx*travel*.5,midY=e.oy+dy*travel*.5,visible=Math.min(frozenLength,188),wakeX=x-Math.cos(angle)*visible*.42,wakeY=y-Math.sin(angle)*visible*.42,handoff=(1-smooth(.8,1,p))*Math.max(a,.72*smooth(.34,.72,p));r.iceTrailSurface(midX,midY,frozenLength,damageWidth,visualAngle,.76*handoff,0,quality);r.windWake(wakeX,wakeY,visible,22,visualAngle,'#172557',.28*a*orbAlpha,phase);r.trail(wakeX,wakeY,visible,3.4,visualAngle,'#d5fbff',.52*a*orbAlpha,phase+.17);}
+      if(travel>.015){const frozenLength=Math.max(8,length*travel),midX=e.ox+dx*travel*.5,midY=e.oy+dy*travel*.5,visible=Math.min(frozenLength,188),wakeX=x-Math.cos(angle)*visible*.42,wakeY=y-Math.sin(angle)*visible*.42,handoff=(1-smooth(.8,1,p))*Math.max(a,.72*smooth(.34,.72,p));r.iceTrailSurface(midX,midY,frozenLength,damageWidth,visualAngle,.76*handoff,0,quality);wake(r,wakeX,wakeY,visible,22,visualAngle,'#172557',.28*a*orbAlpha,phase);r.trail(wakeX,wakeY,visible,3.4,visualAngle,'#d5fbff',.52*a*orbAlpha,phase+.17);}
       const satellites=quality+2;for(let i=0;i<satellites;i++){const orbit=phase*1.8+i*TAU/satellites,dist=25+quality*3;r.shard(x+Math.cos(orbit)*dist,y+Math.sin(orbit)*dist*.58,4+i%2,orbit+angle,'#dffcff',(.42+quality*.055)*a,phase+i*.14);}
       return;
     }
@@ -118,7 +119,7 @@ function staffSpin(c,stage){
     return;
   }
   const travel=stage==='cast'?1:Math.min(1,p*2.25),sx=e.ox+dx*travel,sy=e.oy+dy*travel;
-  r.windWake(e.ox+dx*travel*.48,e.oy+dy*travel*.48,length*travel+22,34,angle,'#4c2e87',.62*a,phase);
+  wake(r,e.ox+dx*travel*.48,e.oy+dy*travel*.48,length*travel+22,34,angle,'#4c2e87',.62*a,phase);
   r.trail(e.ox+dx*travel*.5,e.oy+dy*travel*.5,length*travel,8,angle,accent,.62*a,phase+.1);
   r.starCore(sx,sy,stage==='cast'?34:47,angle+p*2.2,color,.84*a,phase);
   r.starCore(sx,sy,stage==='cast'?23:31,-angle-p*1.6,accent,.75*a,phase+.24);
@@ -153,7 +154,7 @@ function staffFrost(c,stage){
   if(stage==='cast')return;
   for(let i=0;i<9;i++){
     const q=i/9,ang=q*TAU-p*.75,dist=150*(1-p*.62);
-    r.windWake(e.x+Math.cos(ang)*dist*.58,e.y+Math.sin(ang)*dist*.4,dist*.78+20,10,ang+Math.PI,color,.46*a,phase+i*.1);
+    wake(r,e.x+Math.cos(ang)*dist*.58,e.y+Math.sin(ang)*dist*.4,dist*.78+20,10,ang+Math.PI,color,.46*a,phase+i*.1);
     r.rock(e.x+Math.cos(ang)*dist,e.y+Math.sin(ang)*dist*.65,5+i%3,ang,accent,.5*a,phase+i*.13);
   }
 }
@@ -162,9 +163,9 @@ function bowSpin(c,stage){
   const {event:e,progress:p,alpha:a,phase}=c,{dx,dy,length,angle}=geometry(c),r=c.renderer;
   const deep='#0b4137',jade='#25d7a4',mint='#a4ffe0',ivory='#fff1b6';
   const travel=stage==='cast'?1:Math.min(1,p*2.4),visible=Math.max(20,length*travel);
-  r.windWake(e.ox+dx*travel*.5,e.oy+dy*travel*.5,visible,48,angle,deep,.76*a,phase);
-  r.windWake(e.ox+dx*travel*.48,e.oy+dy*travel*.48,visible*.94,31,angle,jade,.7*a,phase+.32);
-  r.windWake(e.ox+dx*travel*.46,e.oy+dy*travel*.46,visible*.87,18,angle,mint,.48*a,phase+.61);
+  wake(r,e.ox+dx*travel*.5,e.oy+dy*travel*.5,visible,48,angle,deep,.76*a,phase);
+  wake(r,e.ox+dx*travel*.48,e.oy+dy*travel*.48,visible*.94,31,angle,jade,.7*a,phase+.32);
+  wake(r,e.ox+dx*travel*.46,e.oy+dy*travel*.46,visible*.87,18,angle,mint,.48*a,phase+.61);
   r.beam(e.ox+dx*travel*.5,e.oy+dy*travel*.5,visible,3.5,angle,ivory,.82*a,phase);
   const x=e.ox+dx*travel,y=e.oy+dy*travel;
   r.arrow(x-Math.cos(angle)*26,y-Math.sin(angle)*26,stage==='cast'?76:102,angle,deep,.82*a,phase);
@@ -183,7 +184,7 @@ function bowFrost(c,stage){
   if(stage==='cast')return;
   for(const [i,mark] of (e.marks||[]).entries()){
     r.starCore(mark.x,mark.y,27,-Math.PI/2,accent,.78*a,phase+i*.17);
-    r.windWake(mark.x,mark.y-28+p*35,78,13,Math.PI/2,color,.64*a,phase+i*.12);
+    wake(r,mark.x,mark.y-28+p*35,78,13,Math.PI/2,color,.64*a,phase+i*.12);
     r.shard(mark.x,mark.y-35+p*38,14,Math.PI/2,accent,.88*a,phase);
   }
 }
@@ -197,7 +198,7 @@ function hitCue(c){
     if(r.assetsReady)r.assetEclipse(e.x,e.y,35+p*14,angle,.82*a,Math.min(7,5+Math.floor(p*3)),clamp(e.quality??2,0,3));
     else{r.starCore(e.x,e.y,28+p*17,angle+p,accent,.84*a,phase);r.vortex(e.x,e.y,46+p*16,-p,color,.5*a,phase);}
   }else{
-    r.crescent(e.x,e.y,37+p*11,angle+Math.PI/2,color,.76*a,phase);r.windWake(e.x,e.y,66,14,angle,accent,.65*a,phase);
+    r.crescent(e.x,e.y,37+p*11,angle+Math.PI/2,color,.76*a,phase);wake(r,e.x,e.y,66,14,angle,accent,.65*a,phase);
   }
 }
 

@@ -1,6 +1,8 @@
 const TAU=Math.PI*2;
 const clamp01=value=>Math.max(0,Math.min(1,value));
 const smooth=value=>{const t=clamp01(value);return t*t*(3-2*t);};
+const OPENING_SCENE_SOURCES=Array.from({length:5},(_,index)=>`./opening-scene-${index+1}-v8.webp`);
+const openingSceneImages=typeof Image==='undefined'?[]:OPENING_SCENE_SOURCES.map(src=>{const image=new Image();image.decoding='async';image.src=src;return image;});
 
 export const OPENING_STORY=Object.freeze([
   {kicker:'THE LAST LIGHT',title:'太阳熄灭后的第七百年',text:'人们把炼金炉里最后的火种送进王城，用黑金与血维持黎明。可每点燃一盏灯，城市便向无底深渊下沉一寸。'},
@@ -11,6 +13,17 @@ export const OPENING_STORY=Object.freeze([
 ]);
 
 function seededPoint(index,seed,width,height){return {x:(index*193+seed*71)%width,y:(index*109+seed*43)%height};}
+
+function drawCinematicStill(ctx,image,w,h,time,scene,local){
+  const sourceW=image.naturalWidth||image.width,sourceH=image.naturalHeight||image.height,baseScale=Math.max(w/sourceW,h/sourceH),zoom=baseScale*(1.075-local*.032),drawW=sourceW*zoom,drawH=sourceH*zoom,travel=[[-.018,.008],[.018,-.006],[-.012,.012],[.02,-.01],[-.018,-.006]][scene]||[0,0],x=(w-drawW)/2+travel[0]*w*(local-.5),y=(h-drawH)/2+travel[1]*h*(local-.5);
+  ctx.save();ctx.fillStyle='#010101';ctx.fillRect(0,0,w,h);ctx.filter='saturate(.88) contrast(1.1) brightness(.84)';ctx.drawImage(image,x,y,drawW,drawH);ctx.filter='none';
+  const readable=ctx.createLinearGradient(0,0,w*.7,0);readable.addColorStop(0,'rgba(0,0,0,.84)');readable.addColorStop(.5,'rgba(0,0,0,.38)');readable.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=readable;ctx.fillRect(0,0,w,h);
+  const depthFog=ctx.createLinearGradient(0,h*.52,0,h);depthFog.addColorStop(0,'rgba(7,13,15,0)');depthFog.addColorStop(.68,'rgba(7,12,13,.12)');depthFog.addColorStop(1,'rgba(1,2,2,.48)');ctx.fillStyle=depthFog;ctx.fillRect(0,h*.48,w,h*.52);
+  ctx.globalCompositeOperation='screen';for(let i=0;i<16;i++){const point=seededPoint(i,scene+11,w,h),drift=(time*(3+i%3)+i*37)%110,alpha=.025+(i%4)*.008;ctx.globalAlpha=alpha*Math.sin(Math.PI*local);ctx.fillStyle=scene<2?'#d59b53':scene===3?'#b9d2ce':'#d8b66c';ctx.beginPath();ctx.ellipse(point.x+drift,point.y+(i%2?drift*.12:-drift*.08),1.2+i%2,.45,scene*.3,0,TAU);ctx.fill();}ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
+  const lens=ctx.createRadialGradient(w*.72,h*.36,2,w*.72,h*.36,w*.48);lens.addColorStop(0,scene===2?'rgba(140,183,205,.06)':'rgba(226,161,74,.055)');lens.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=lens;ctx.fillRect(0,0,w,h);
+  const vignette=ctx.createRadialGradient(w*.54,h*.46,w*.18,w*.54,h*.46,w*.72);vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(1,'rgba(0,0,0,.62)');ctx.fillStyle=vignette;ctx.fillRect(0,0,w,h);
+  const fadeIn=smooth(local/.12),fadeOut=1-smooth((local-.9)/.1);ctx.fillStyle=`rgba(0,0,0,${1-fadeIn*fadeOut})`;ctx.fillRect(0,0,w,h);ctx.restore();
+}
 
 function backdrop(ctx,w,h,time,scene){
   const palettes=[['#16221d','#030504','#8fb77a'],['#24140d','#040202','#d69754'],['#12152c','#03030a','#9ea9ef'],['#24070d','#050102','#d96d79'],['#071823','#010407','#6bd1e8']],palette=palettes[scene]||palettes[4],sky=ctx.createLinearGradient(0,0,0,h);sky.addColorStop(0,palette[0]);sky.addColorStop(.62,palette[1]);sky.addColorStop(1,'#010101');ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
@@ -48,7 +61,7 @@ function drawFinalThrone(ctx,w,h,time){
 }
 
 export function drawOpeningStoryFrame(ctx,time,scene,local){
-  const w=ctx.canvas.width||1600,h=ctx.canvas.height||900;ctx.clearRect(0,0,w,h);backdrop(ctx,w,h,time,scene);ruins(ctx,w,h,time,scene);
+  const w=ctx.canvas.width||1600,h=ctx.canvas.height||900,image=openingSceneImages[scene];ctx.clearRect(0,0,w,h);if(image?.complete&&(image.naturalWidth||image.width)){drawCinematicStill(ctx,image,w,h,time,scene,local);return;}backdrop(ctx,w,h,time,scene);ruins(ctx,w,h,time,scene);
   if(scene===0)drawEclipse(ctx,w,h,time);
   if(scene===1)drawBrokenCrown(ctx,w,h,time,local);
   if(scene===2)drawKeepers(ctx,w,h,time);

@@ -1,0 +1,393 @@
+{
+  "build": "8.3-world-repair-1",
+  "files": {
+    ".nojekyll": {
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "ART_SOURCES.md": {
+      "bytes": 2855,
+      "sha256": "f2424d7a5bd61ccba674560aef2d94ef74fed7272e15b12362fbf2f581a331ee"
+    },
+    "README.md": {
+      "bytes": 14311,
+      "sha256": "43cbb06887ec1f858acc9cccf110e311dd8f0bf060944c584a05e3e3d558f3cd"
+    },
+    "animation.mjs": {
+      "bytes": 4796,
+      "sha256": "eef0320b667672bde5f45af291bf82b87ceefa2cd76d73d44ed8240e3e1e7f63"
+    },
+    "bosses-gothic.png": {
+      "bytes": 2911332,
+      "sha256": "4256559e2bccdb2439206d032441843b5be4a1174df3c8656b3ec92fdbccc737"
+    },
+    "bosses-morph-v7.png": {
+      "bytes": 4297414,
+      "sha256": "6d7aa01d23667c5013027983107bc4e8571ea1358762b8d100141ff59d400d9d"
+    },
+    "combat-vfx-qa.html": {
+      "bytes": 3478,
+      "sha256": "dbb70e361abd40829eec58f097432b2f7182c00c2507d5b6f89abf2ef410b7a4"
+    },
+    "combat-vfx.mjs": {
+      "bytes": 20003,
+      "sha256": "89dc38e837f5317c5b294b572d2fdb57ec35ae646c436f0b944bf1fdef403ef9"
+    },
+    "effects-qa.mjs": {
+      "bytes": 3154,
+      "sha256": "8d3dcc909ea62148dd797e82d889b4158bccb13948b770d53f0b90960dab6f36"
+    },
+    "enemies-arcane-v7.png": {
+      "bytes": 3188092,
+      "sha256": "6957d542372d1a877024b5ba503686a7186db60c7f54a564d63d25bf981ba8ac"
+    },
+    "enemies-core-v7.png": {
+      "bytes": 3015344,
+      "sha256": "eb3908235622cf2e9033f7885af34ce1996705101e8546629f20bc5e8d4e67e5"
+    },
+    "enemies-gothic.png": {
+      "bytes": 2512131,
+      "sha256": "7ed10abe5d74515e34a016653b995e16c5e0d9f6575f8b40f550311a17cf7d64"
+    },
+    "enemy-sprites-v4.png": {
+      "bytes": 1596367,
+      "sha256": "771d687758e8ab3dab696f0b89b4be78453fc0ff8c22301f9648efc957907080"
+    },
+    "engine.mjs": {
+      "bytes": 7822,
+      "sha256": "d19dbc0e874dc6f48cb303526ea5b762a3f5f7728fe91c77e70de053caed72bd"
+    },
+    "game.mjs": {
+      "bytes": 242975,
+      "sha256": "30ee920b9c52d08e23b075af1dd60fa2a199bff929799be2d7a7bd1404a93beb"
+    },
+    "hero-bow-keyposes-v8.png": {
+      "bytes": 2081860,
+      "sha256": "0b589a656efac33c2ae9e83b996987491baaca526fd6b9490f5a183ad4abbea0"
+    },
+    "hero-bow-v7.png": {
+      "bytes": 1795522,
+      "sha256": "f99fb9302bf470b639f55d7e7c072683da64294c22ea1415716453fc303d1687"
+    },
+    "hero-gothic.png": {
+      "bytes": 1678615,
+      "sha256": "fcc3be256a4fb14cb54c5d1b6f4d83112d5032441beac655546312c6f1c17f9a"
+    },
+    "hero-sprites-v4.png": {
+      "bytes": 1196309,
+      "sha256": "b01b95fdb40512758c1edcd3a5fa50b24e516f8db212b8f7463decf43b31302b"
+    },
+    "hero-staff-keyposes-v8.png": {
+      "bytes": 2229710,
+      "sha256": "5a58e36fc5cd538ac2a69fbe57f1a7509778fffe0cfc504dd85c9f7723974cb6"
+    },
+    "hero-staff-v7.png": {
+      "bytes": 2037574,
+      "sha256": "ed81868b724ebb55b262879963292170c2a47a11590552a4d8d4d42b7a2d239d"
+    },
+    "hero-sword-keyposes-v8.png": {
+      "bytes": 1861105,
+      "sha256": "32eca8dda04899c189f00d9990653ddc454c4fdadf0df5254d2042b11ba24a36"
+    },
+    "hero-sword-v7.png": {
+      "bytes": 1580201,
+      "sha256": "f91229cab4fb2209ed9616cf1b36269c3c450a66b4c86211d30e868bc06e5958"
+    },
+    "hero-walk-bow-down-right-v8.png": {
+      "bytes": 347471,
+      "sha256": "576692b1296d7e27d311595dfc534a66e903c323416db5f78095ddbdb4f701e3"
+    },
+    "hero-walk-bow-down-v8.png": {
+      "bytes": 428327,
+      "sha256": "81b582d40aa4980ca9e222d8dcc1f9a0712f772a6bc25dbb1bce5ddcc8c5a9bd"
+    },
+    "hero-walk-bow-right-v8.png": {
+      "bytes": 356818,
+      "sha256": "939e48ee7db591631101851216c861312faed1862bd7c6ea1477c67a018d8332"
+    },
+    "hero-walk-bow-up-right-v8.png": {
+      "bytes": 320646,
+      "sha256": "f15c8c5b7175b2a6d418798640ebae87cd7352483ca8073e1066c308654290f9"
+    },
+    "hero-walk-bow-up-v8.png": {
+      "bytes": 328688,
+      "sha256": "ab16dd731eb0c7d9307b3c7f2f97c08e82ce49e229e412dabebd3a17ac3bda63"
+    },
+    "hero-walk-staff-down-right-v8.png": {
+      "bytes": 393915,
+      "sha256": "3ffc1e290843f981f6cdd28f27d4f98631c70646b0fcd1f6bb43923373ce8744"
+    },
+    "hero-walk-staff-down-v8.png": {
+      "bytes": 382105,
+      "sha256": "07a0aa5bb55115cb386acb59623d6616fe9297ce656786e695dfd3ad909e9d44"
+    },
+    "hero-walk-staff-right-v8.png": {
+      "bytes": 371675,
+      "sha256": "a6fd2c235849fc07b0a7a6ff55fbec7949f0da6199a8c660b4be4f00d1b6c97e"
+    },
+    "hero-walk-staff-up-right-v8.png": {
+      "bytes": 345359,
+      "sha256": "ab9853fd3a0f0b93c3b4a36cf75abb58f872e1884360a9f7aac98b10c0712489"
+    },
+    "hero-walk-staff-up-v8.png": {
+      "bytes": 376247,
+      "sha256": "902335caf487808ccfe7f5ae65aa95d8885e764bb68b4158da99fe94a293d3b7"
+    },
+    "hero-walk-sword-down-right-v8.png": {
+      "bytes": 355753,
+      "sha256": "f1dfccd040562888d9cd14fb15f23f9a080a9d3ec791ed1061a7f449e3114e41"
+    },
+    "hero-walk-sword-down-v8.png": {
+      "bytes": 343211,
+      "sha256": "ccad6a2e27f0cad4aa15f120ea7c88b16d1a10f729760a24760393075dc62830"
+    },
+    "hero-walk-sword-right-v8.png": {
+      "bytes": 310576,
+      "sha256": "2073ed9fc1834efe9cbebc28074a9ee6ba7d95aeeb2987bc1039ed627aa446a5"
+    },
+    "hero-walk-sword-up-right-v8.png": {
+      "bytes": 300111,
+      "sha256": "fd37e3c508625364be54c46ac12dcde4b9071f8371b5d5f259e44d52509f53e5"
+    },
+    "hero-walk-sword-up-v8.png": {
+      "bytes": 321668,
+      "sha256": "34a207ede02817df1aa9cb2374022a581a866f9862b7b8d399b365492ed341e6"
+    },
+    "hit-render-qa.mjs": {
+      "bytes": 942,
+      "sha256": "5cdee9e08dd30d99b3b5db1f96f810f583b985bf36f61c99c08a3b8bf767dccf"
+    },
+    "index.html": {
+      "bytes": 8313,
+      "sha256": "e95d1f2ffdab96aa98d2a9d0348702b70c889e1f29f5fc0b006dcfe952b8e6bf"
+    },
+    "loot-armor-epic-v8.png": {
+      "bytes": 466561,
+      "sha256": "3642282260f3806edb7db13f0e9be827201234040de31972aca70559487c2107"
+    },
+    "loot-armor-standard-v8.png": {
+      "bytes": 471848,
+      "sha256": "b2d92689b79b5d4d64b210fdcda896487107c339fe420836f15ccc473ab8d167"
+    },
+    "loot-armor-supreme-v8.png": {
+      "bytes": 518091,
+      "sha256": "fb81646e85a5989f15241233b8bc20d99aec0ad7590f95b863a3d9042359d924"
+    },
+    "loot-art-qa.html": {
+      "bytes": 3398,
+      "sha256": "35360ec7937c760c40b0190f038365181c87c17f68f1cbbce1d6609e53edab6a"
+    },
+    "loot-bow-epic-v8.png": {
+      "bytes": 160394,
+      "sha256": "a7259e2ba68d8e116a5576ad3a28a1894c4bc2241fdc415f99f4a42854084aab"
+    },
+    "loot-bow-standard-v8.png": {
+      "bytes": 135310,
+      "sha256": "34a41339c70ba0ab58c9446f238bd971e54dfcca840e689076ebeaa28dc664aa"
+    },
+    "loot-bow-supreme-v8.png": {
+      "bytes": 133312,
+      "sha256": "898fd2917a68fd37e1a1fd8fd9e03fb497918681e5da3a395b0485c2f7293e42"
+    },
+    "loot-ring-epic-v8.png": {
+      "bytes": 482127,
+      "sha256": "b1a8b24f1fa9dbee99ba5e381baedfc8d9c1611ef63a3a5a678c5d1c17f42972"
+    },
+    "loot-ring-standard-v8.png": {
+      "bytes": 497362,
+      "sha256": "a6a4e4d20872381bb878cc70e535ed5653610c534d71da39b99ced7b3185d122"
+    },
+    "loot-ring-supreme-v8.png": {
+      "bytes": 533779,
+      "sha256": "55088c0709fa8700a7402678381cc97cec78c58e3c58e50eb23648f0633b41e6"
+    },
+    "loot-staff-epic-v8.png": {
+      "bytes": 141244,
+      "sha256": "8715df19e21138f37182770656c6aa732f15f4a3efe977f52f17ce32d6541563"
+    },
+    "loot-staff-standard-v8.png": {
+      "bytes": 113057,
+      "sha256": "91a52ec4d12bfdbb4a2c3ea64ab89b724accf012cace99c176439bc5163d21ab"
+    },
+    "loot-staff-supreme-v8.png": {
+      "bytes": 115735,
+      "sha256": "f35257e06630dd2036d25e7af88ffffdfb6901ee653d63863c2251faf4a56d39"
+    },
+    "loot-staff-v8.png": {
+      "bytes": 1103404,
+      "sha256": "9715c2f25ed699ef46843953f911acce85ed9c13497cfdfcef89d6afb59b66ff"
+    },
+    "loot-sword-epic-v8.png": {
+      "bytes": 129336,
+      "sha256": "dec1ea493c81c441f26edfe20c7739b1dbd817296903c6ab7d26416c1bbc46dd"
+    },
+    "loot-sword-standard-v8.png": {
+      "bytes": 71436,
+      "sha256": "3843ef1dd2426346b617c6832a2eb53a5f24a8ef12d511c62d20e64d70b1f0b3"
+    },
+    "loot-sword-supreme-v8.png": {
+      "bytes": 146159,
+      "sha256": "fd3a12af0f15334bc32f7a18989b2cd3a4b32a8b7428712a0991aa331e270507"
+    },
+    "merchant-portrait-v8.webp": {
+      "bytes": 98010,
+      "sha256": "b3c699c54d4c79610bbe04d4b5f9dc6c287c51b75fbf63815abe2d74e6376fd6"
+    },
+    "merchant-stall-v8.webp": {
+      "bytes": 133534,
+      "sha256": "c4963d7e559811f28652e653d0526eee6382c92dc266442a0060d7d18ec6d5f0"
+    },
+    "motion-qa.mjs": {
+      "bytes": 3397,
+      "sha256": "f875af1dfb56852986cb78fad80418a37c5cb4cf849bc301670a2dd524a83d35"
+    },
+    "obstacle-wall-horizontal-v8.png": {
+      "bytes": 276935,
+      "sha256": "04aea0956b0dbbee65ac41cfd66091e740e9ae1bf1cf3741661847768c9cbde6"
+    },
+    "obstacle-wall-vertical-v8.png": {
+      "bytes": 209240,
+      "sha256": "cb10b75beef859e37a2ba07f52e337ccd397abd28ec85e969447c0baaa68450b"
+    },
+    "opening-cg.mjs": {
+      "bytes": 11295,
+      "sha256": "87d8a1fdc27bf4e5b44921818de3c75dae548ee2ac0bae4c6f669fc241f90d35"
+    },
+    "opening-scene-1-v8.webp": {
+      "bytes": 187872,
+      "sha256": "b21e742c66818665fb15aba4a7cd1bba3d5f0ddabcdb369fba187fe02697e6ae"
+    },
+    "opening-scene-2-v8.webp": {
+      "bytes": 230844,
+      "sha256": "62adf6b32807cac5de7290d2e07992c07d103c63596a8ff81a48427e151da9e9"
+    },
+    "opening-scene-3-v8.webp": {
+      "bytes": 230426,
+      "sha256": "a107ae6068e61cb28caa0d290d9b0b2c2284bba32e8004322a97d039efc94bc9"
+    },
+    "opening-scene-4-v8.webp": {
+      "bytes": 167720,
+      "sha256": "29a6776a76cf920066934f11c3dbad7241aaa4a107ba76fc141a6ba652ce230f"
+    },
+    "opening-scene-5-v8.webp": {
+      "bytes": 178502,
+      "sha256": "05eb4476aaf3d03356f4efee809f341138ddb8c13d29429176529c20a1218fc2"
+    },
+    "portal-frame-gothic-v8.png": {
+      "bytes": 566405,
+      "sha256": "3556fe85331a9d1fe02d1abb40214a03735f68c64d6540d9a22a2e29c4a2971b"
+    },
+    "serve.mjs": {
+      "bytes": 990,
+      "sha256": "ab2ae468a95dbbcd38b1cfe7aecca5016f486e499b44bf3cc46d9b2561722cc3"
+    },
+    "sprite-motion.mjs": {
+      "bytes": 2789,
+      "sha256": "ce3d05ec6fdcf5e94aba117c70574e78fda1773a3b51b900b9a8b1752b8a4340"
+    },
+    "staff-vfx-material-qa.html": {
+      "bytes": 4016,
+      "sha256": "e4f0b069dbed2bca122df7ea7ccfeb81dcb11881bb3c43ebc4c5296d6ae2dd8b"
+    },
+    "style.css": {
+      "bytes": 35015,
+      "sha256": "87ff90ab99ff5e72d52f8be8ad64ab9f6a3e488a619c21bf1ccf966909b19fe6"
+    },
+    "sword-vfx-material-qa.html": {
+      "bytes": 3453,
+      "sha256": "021cf518920a1eb448a44e4151d632490ebb3dac2f4fdef220935df7b1cce0c8"
+    },
+    "test.mjs": {
+      "bytes": 67199,
+      "sha256": "69f68be18216f5c9abc8c54f1402690f20d7d50a5ff06346b8b5a62b3462b4bd"
+    },
+    "tools/audit-release.mjs": {
+      "bytes": 1964,
+      "sha256": "82bafcb69a5622e9c89c97a8229447f710490dc19bfd72cb349cf11f23865c78"
+    },
+    "vfx-renderer.mjs": {
+      "bytes": 25725,
+      "sha256": "dd970df0ddbd68380a99869d052e3b87c1cb25fe7a78e39ad9fd7a1f030b6602"
+    },
+    "vfx-staff-burst-flipbook-v9.png": {
+      "bytes": 1964277,
+      "sha256": "6c927856658a76cbf8ceb6ee24c1032c2c656a33e4eeee8019e558c022df9409"
+    },
+    "vfx-staff-collapse-atlas-v8.png": {
+      "bytes": 1920376,
+      "sha256": "ad504dc1b82ad2ba2a5e2d1fee0ad56640a199f9e527d6a37cd65ac2196a3804"
+    },
+    "vfx-staff-collapse-flipbook-v10-alpha.png": {
+      "bytes": 4004571,
+      "sha256": "6f78ed1ac11fdc0b2f2d4352754cd429943281f399aa5f070631681dc4dd119c"
+    },
+    "vfx-staff-collapse-flipbook-v10.png": {
+      "bytes": 3930937,
+      "sha256": "eb48295872bd3ad26d0c56966da09287739d6ee41c52ecb7e91cbb2f17b38efd"
+    },
+    "vfx-staff-collapse-flipbook-v9.png": {
+      "bytes": 1924496,
+      "sha256": "39d8f92f56ee8a1561a7c473418470cfbc2af5af393a543d34949244046312b6"
+    },
+    "vfx-staff-distortion-v8.png": {
+      "bytes": 597133,
+      "sha256": "1ae363fb75b462855f200ec3cdfa759f50d0072b62be90a84d5e6b586c3a5abe"
+    },
+    "vfx-staff-eclipse-atlas-v8.png": {
+      "bytes": 1566429,
+      "sha256": "b0d6f28167ab4f4f6420f08c3e2edef8ab1e375304c724a059dcbe9080aa175c"
+    },
+    "vfx-staff-flow-v8.png": {
+      "bytes": 223539,
+      "sha256": "dc287b4889b6963295775e618d2a8189455225eec1acce31c954fde9125a7c71"
+    },
+    "vfx-staff-ground-contact-v9.png": {
+      "bytes": 1886637,
+      "sha256": "285a525c39b88da3f1cfb548eb4755351b40c1fda92c3c8778b91d31828782b0"
+    },
+    "vfx-staff-ice-burst-v8.png": {
+      "bytes": 1865549,
+      "sha256": "3be4aef4324844f8674874160653139addfa157a17782de4ede9e6155d05d772"
+    },
+    "vfx-staff-ice-trail-v8.png": {
+      "bytes": 1641194,
+      "sha256": "9cf532bac25d21772b1e1c4099bb821a50ceaae4ee9f47c263b37d86e0221357"
+    },
+    "vfx-staff-normal-v8.png": {
+      "bytes": 703393,
+      "sha256": "56847942944c5d0a4e7634702bb9f781d8a35cb25593bc2b59ea36de9ad8e30d"
+    },
+    "vfx-sword-distortion-v8.png": {
+      "bytes": 476699,
+      "sha256": "6c974d240d5b64533d58bb4bde501375e27a0bb8fdcc704a4fbec336e0e577b9"
+    },
+    "vfx-sword-flow-v8.png": {
+      "bytes": 167362,
+      "sha256": "1a698a66b19b9fdb051a411a7a2a50492d05337e529c0755885d9fc69574ac41"
+    },
+    "vfx-sword-normal-v8.png": {
+      "bytes": 530428,
+      "sha256": "27d240960f4c86d781f7dddbb814507f130c36549ee2d3761d4f8666df47631d"
+    },
+    "vfx-sword-slash-atlas-v8.png": {
+      "bytes": 828599,
+      "sha256": "e6b026062e322c6d2262a9ce14796e47ab7faccd38ae89d566718f8647a8caaf"
+    },
+    "vfx-sword-sparks-atlas-v8.png": {
+      "bytes": 884077,
+      "sha256": "9785b6b4a3cd294ef033b41abd21355776beb48faf85e2dd7b7727932eb9cbba"
+    },
+    "webgl-qa.html": {
+      "bytes": 1762,
+      "sha256": "870942b531f1e0128a5a22176563b05eb01a4e4036c0220d8fd8f1befc617115"
+    },
+    "webgl-vfx.mjs": {
+      "bytes": 51818,
+      "sha256": "49e2fee23802d9687ce17ae1e14840a579aeb6f71787dfb4ae0b2cc27fb125af"
+    },
+    "world-scene.mjs": {
+      "bytes": 5028,
+      "sha256": "e7d49237053977d6cc45d2f6448d964b0a6d4ee368b7fa96e8bbcae0f0596732"
+    }
+  }
+}

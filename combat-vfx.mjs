@@ -18,7 +18,8 @@ export const VFX_MATERIALS=Object.freeze({
 function eventFrame(event,time,provided={}){
   const rawAlpha=provided.rawAlpha??clamp((event.life??1)/(event.max??1));
   const progress=provided.progress??1-rawAlpha;
-  const alpha=provided.alpha??Math.min(1,rawAlpha*1.5);
+  // Sustain detailed material faces, then release them. Do not brighten the whole screen.
+  const alpha=provided.alpha??(1-smooth(.58,1,progress));
   const intro=smooth(0,.16,progress),release=1-smooth(.72,1,progress);
   return {...provided,event,time,progress,rawAlpha,alpha,energy:intro*release,phase:provided.phase??time*.55+(event.seed||0)*.001,color:event.color||provided.color||'#d7c28b',accent:event.accent||provided.accent||event.color||'#f4df9b'};
 }
@@ -129,34 +130,70 @@ function staffSpin(c,stage){
 function staffFrost(c,stage){
   const {event:e,progress:p,alpha:a,phase,color,accent}=c,r=c.renderer;
   const quality=clamp(e.quality??3,0,3),damageRadius=e.radius||165,cx=e.x,cy=e.y;
-  if(r.assetsReady){
-    const radius=damageRadius,angles=Array.from({length:6},(_,i)=>-Math.PI/2+i*TAU/6),radii=[.79,.75,.77,.79,.75,.77],nodes=[];
-    if(stage==='cast'){
-      const seed=smooth(.02,.2,p),spread=smooth(.12,.67,p),crystalReveal=smooth(.4,.88,p),form=smooth(.34,.92,p),scale=.16+.84*smooth(.1,.82,p),handoff=1-.18*smooth(.88,1,p),castAlpha=a*handoff;
-      r.disc(cx,cy,radius,'#031b47',.11*castAlpha*seed,.86,0,phase);r.ring(cx,cy,18+radius*.83*spread,'#72ddff',.9*castAlpha*seed,.022,.9,p*.12,phase);r.starCore(cx,cy,10+31*seed,p*1.35,'#f4ffff',1.08*castAlpha*seed,phase+.11);r.light(cx,cy,42+42*seed,'#198cff',.16*castAlpha*seed,.74,phase);
-      for(let i=0;i<6;i++){const pair=i%3,appear=smooth(.16+pair*.1,.42+pair*.1,p),distance=radius*radii[i]*spread,x=cx+Math.cos(angles[i])*distance,y=cy+Math.sin(angles[i])*distance;nodes.push([x,y,appear]);const rayLength=Math.hypot(x-cx,y-cy),rayAngle=angles[i];r.beam((cx+x)*.5,(cy+y)*.5,rayLength,5+quality*.45,rayAngle,'#07387b',.72*castAlpha*appear,phase+i*.07);r.beam((cx+x)*.5,(cy+y)*.5,rayLength,1.7+quality*.22,rayAngle,'#e9fdff',1.02*castAlpha*appear,phase+i*.07);r.starCore(x,y,4+(9+quality*1.5)*appear,angles[i],'#f3ffff',.96*castAlpha*appear,phase+i*.16);}
-      const perimeter=smooth(.43,.78,p);for(let i=0;i<6;i++){const [x1,y1,a1]=nodes[i],[x2,y2,a2]=nodes[(i+1)%6],dx=x2-x1,dy=y2-y1,link=perimeter*Math.min(a1,a2),beamAngle=Math.atan2(dy,dx),beamLength=Math.hypot(dx,dy);r.beam((x1+x2)*.5,(y1+y2)*.5,beamLength,5.4+quality*.38,beamAngle,'#06245a',.84*castAlpha*link,phase+i*.08);r.beam((x1+x2)*.5,(y1+y2)*.5,beamLength,1.8+quality*.22,beamAngle,'#e5fcff',1.08*castAlpha*link,phase+i*.08);}
-      flipbook(r,'assetCollapseMist',cx,cy,radius*.9*scale,-.05+p*.05,.2*castAlpha*crystalReveal,form,quality,0,3);flipbook(r,'assetCollapse',cx,cy,radius*.94*scale,-.05+p*.05,1.2*castAlpha*crystalReveal,form,quality,0,3);if(quality>=1)flipbook(r,'assetCollapseEdge',cx,cy,radius*.965*scale,-.05+p*.05,1.26*castAlpha*crystalReveal,form,quality,0,3);
-      r.ring(cx,cy,radius,'#c7f9ff',.9*castAlpha*perimeter,.019,.92,0,phase);return;
+  const invoke=(name,...args)=>{if(typeof r[name]==='function')r[name](...args);};
+  const angles=Array.from({length:6},(_,i)=>-Math.PI/2+i*TAU/6),radii=[.78,.75,.77,.78,.75,.77];
+  const renderGround=(strength,rotation=0,progress=p)=>{
+    // Keep the floor readable: a dark contact well, a beveled rim, then sparse fractures.
+    invoke('groundSeal',cx,cy,damageRadius*1.04,rotation,'#061528',.46*strength,progress);
+    invoke('crackField',cx,cy,damageRadius*1.01,rotation,'#1b6da5',.4*strength,progress);
+    const fractureReveal=smooth(.12,.66,clamp(progress,0,1));
+    for(let i=0;i<4;i++){
+      const rayAngle=angles[(i+1)%angles.length]+Math.sin(progress*2.4+i)*.08;
+      const distance=damageRadius*(.16+(i%2)*.09),length=damageRadius*(.11+(i%3)*.035),x=cx+Math.cos(rayAngle)*distance,y=cy+Math.sin(rayAngle)*distance*.58;
+      invoke('beam',x,y,length,1.35+i%2*.45,rayAngle,'#c8f8ff',.24*strength*fractureReveal,phase+i*.17);
+      if(i%2===0)invoke('shard',x+Math.cos(rayAngle)*length*.52,y+Math.sin(rayAngle)*length*.28,2.2+i*.45,rayAngle+.34,'#efffff',.34*strength*fractureReveal,phase+i*.17);
     }
-    const takeover=smooth(0,.12,p),collapse=smooth(.14,.58,p),release=1-smooth(.78,1,p),visual=(.72+.28*takeover)*release,drawRadius=radius*(1-.18*collapse);
-    flipbook(r,'assetCollapseMist',cx,cy,drawRadius*.9,.04-p*.1,.22*a*visual,p,quality,3,7);flipbook(r,'assetCollapse',cx,cy,drawRadius*.94,.04-p*.1,1.2*a*visual,p,quality,3,7);flipbook(r,'assetCollapseEdge',cx,cy,drawRadius*.965,.04-p*.1,1.3*a*visual,p,quality,3,7);
-    for(let i=0;i<6;i++){const distance=radius*radii[i]*(1-.74*collapse),x=cx+Math.cos(angles[i]+p*.06)*distance,y=cy+Math.sin(angles[i]+p*.06)*distance;nodes.push([x,y]);r.starCore(x,y,12+quality*1.5,angles[i]-p,'#efffff',.82*a*visual,phase+i*.16);}
-    for(let i=0;i<nodes.length;i++){const [x1,y1]=nodes[i],[x2,y2]=nodes[(i+1)%nodes.length],sx=x2-x1,sy=y2-y1,beamAngle=Math.atan2(sy,sx),beamLength=Math.hypot(sx,sy);r.beam((x1+x2)*.5,(y1+y2)*.5,beamLength,4.4+quality*.32,beamAngle,'#041b4b',.86*a*visual,phase+i*.08);r.beam((x1+x2)*.5,(y1+y2)*.5,beamLength,1.55+quality*.18,beamAngle,'#d8fbff',1.02*a*visual,phase+i*.08);}
-    const burst=smooth(.26,.56,p)*(1-smooth(.82,1,p));r.disc(cx,cy,radius,'#04265e',.13*a*visual,.86,0,phase);r.ring(cx,cy,radius,'#d8fdff',.96*a*visual,.02,.92,0,phase);r.starCore(cx,cy,24+42*burst,-p*2.1,'#f7ffff',1.04*a*visual,phase+.12);r.light(cx,cy,76+28*burst,'#188dff',.17*a*burst,.74,phase);
-    for(let i=0;i<6+quality;i++){const shardAngle=angles[i%6]+(i>5?.34:0),dist=26+burst*(62+i*6);r.shard(cx+Math.cos(shardAngle)*dist,cy+Math.sin(shardAngle)*dist,6+i%4,shardAngle,'#f0ffff',(.5+quality*.05)*a*burst,phase+i*.12);}
+    r.ring(cx,cy,damageRadius*.98,'#c9f8ff',.16*strength,.014,.62,rotation,phase);
+  };
+  const renderPrisms=(growth,strength,rotation=0)=>{
+    const reveal=clamp(growth,0,1);
+    for(let i=0;i<6;i++){
+      const delay=(i%3)*.075,appear=smooth(delay,.52+delay,reveal),distance=damageRadius*radii[i]*(.96-.13*reveal),x=cx+Math.cos(angles[i]+rotation)*distance,y=cy+Math.sin(angles[i]+rotation)*distance*.58,lean=angles[i]+rotation+(i%2?-.1:.1);
+      invoke('prism',x,y,21+quality*2.2,78+quality*7+reveal*28,lean,i%2?'#2d8bc9':'#bff7ff',(.7+quality*.06)*strength*appear,appear);
+      r.starCore(x,y-2,4.5+(8+quality)*appear,lean-.18,'#efffff',.46*strength*appear,phase+i*.17);
+      const beamLength=Math.hypot(x-cx,y-cy),rayAngle=Math.atan2(y-cy,x-cx);
+      r.beam((cx+x)*.5,(cy+y)*.5,beamLength,4.4+quality*.32,rayAngle,'#0a3769',.48*strength*appear,phase+i*.08);
+      r.beam((cx+x)*.5,(cy+y)*.5,beamLength,1.15+quality*.12,rayAngle,'#dffcff',.5*strength*appear,phase+i*.08);
+    }
+  };
+  if(r.assetsReady){
+    if(stage==='cast'){
+      const seal=smooth(.02,.28,p),pressure=smooth(.08,.56,p),crystalReveal=smooth(.2,.78,p),fade=1-smooth(.9,1,p),castAlpha=a*fade,rotation=-.05+p*.035;
+      renderGround(castAlpha*seal,rotation,p);
+      renderPrisms(smooth(.16,.9,p),castAlpha*.28,rotation);
+      if(typeof r.assetStaffGroundV9==='function')r.assetStaffGroundV9(cx,cy,damageRadius*1.02,rotation,.84*castAlpha,crystalReveal,quality);
+      if(typeof r.assetStaffCollapseV9==='function')r.assetStaffCollapseV9(cx,cy-16,damageRadius*.84,rotation,.96*castAlpha,crystalReveal,quality);
+      if(typeof r.assetStaffCollapseV10==='function'&&crystalReveal>.72)r.assetStaffCollapseV10(cx,cy-16,damageRadius*.84,rotation+.015,.94*castAlpha,(crystalReveal-.72)/.28,quality);
+      if(typeof r.assetStaffGleamV9==='function')r.assetStaffGleamV9(cx,cy-18,damageRadius*.86,rotation+.08,.82*castAlpha,crystalReveal,quality);
+      invoke('collapseMist',cx,cy-18,damageRadius*.7,rotation,'#2e8ed0',.05*castAlpha*crystalReveal,crystalReveal);
+      r.ring(cx,cy,22+damageRadius*.7*pressure,'#74ddff',.58*castAlpha*pressure,.014,.82,rotation,phase);
+      r.ring(cx,cy,damageRadius*(.58+.38*crystalReveal),'#e3fdff',.42*castAlpha*crystalReveal,.011,.8,-rotation,phase+.18);
+      r.light(cx,cy-34,38+34*pressure,'#1d9dff',.08*castAlpha*pressure,.72,phase);
+      return;
+    }
+    const seal=smooth(0,.12,p),pull=smooth(.1,.5,p),burst=smooth(.18,.48,p)*(1-smooth(.7,1,p)),fade=1-smooth(.78,1,p),visual=(.78+.22*seal)*fade,rotation=.04-p*.08,drawRadius=damageRadius*(1-.1*pull),perimeter=drawRadius*.98;
+    renderGround(a*visual*.48,rotation,p);
+    renderPrisms(.72+.28*pull,a*visual*.2,rotation);
+    if(typeof r.assetStaffGroundV9==='function')r.assetStaffGroundV9(cx,cy,drawRadius*1.02,rotation,.68*a*visual,clamp(.22+.5*pull,0,.999),quality);
+    if(typeof r.assetStaffCollapseV9==='function'&&pull<.74)r.assetStaffCollapseV9(cx,cy-14,drawRadius*.8,rotation,.42*a*visual,clamp(.12+.48*pull,0,.999),quality);
+    if(typeof r.assetStaffCollapseV10==='function'&&pull>=.74)r.assetStaffCollapseV10(cx,cy-14,drawRadius*.8,rotation+.015,.9*a*visual,(pull-.74)/.26,quality);
+    if(typeof r.assetStaffGleamV9==='function'&&pull<.74)r.assetStaffGleamV9(cx,cy-16,drawRadius*.82,rotation+.06,.76*a*visual,clamp(.16+.58*pull,0,.999),quality);
+    invoke('collapseMist',cx,cy-20,drawRadius*.72,rotation,'#1d72b1',.06*a*visual,p);
+    if(pull>=.74)invoke('prism',cx,cy-30,26+burst*8,62+burst*18,-p*1.3,'#167ccc',.52*a*visual,1);
+    r.ring(cx,cy,perimeter,'#e4fdff',.62*a*visual,.012,.82,rotation,phase);
+    if(burst>.01){
+      if(typeof r.assetStaffBurstV9==='function')r.assetStaffBurstV9(cx,cy,damageRadius*(.56+.32*burst),rotation,.98*a*burst,clamp(.02+burst*.96,0,.999),quality);
+      r.iceBurst(cx,cy,damageRadius*(.24+.3*burst),rotation,.18*a*burst,burst,quality);
+      for(let i=0;i<8+quality;i++){const shardAngle=angles[i%6]+(i>5?.22:-.08),distance=24+burst*(48+i*4);r.shard(cx+Math.cos(shardAngle)*distance,cy+Math.sin(shardAngle)*distance*.68,5+i%4,shardAngle,'#f2ffff',(.36+quality*.035)*a*burst,phase+i*.12);}
+      r.light(cx,cy-32,48+24*burst,'#2a9dff',.09*a*burst,.72,phase);
+    }
     return;
   }
-  const size=stage==='cast'?145:172*(.78+.22*p);
-  r.vortex(e.x,e.y,size,p*1.25,'#170d2b',.86*a,phase);
-  r.vortex(e.x,e.y,size*.88,-p*1.55,color,.72*a,phase+.28);
-  r.starCore(e.x,e.y,stage==='cast'?48:64,p*2,accent,.86*a,phase+.14);
-  if(stage==='cast')return;
-  for(let i=0;i<9;i++){
-    const q=i/9,ang=q*TAU-p*.75,dist=150*(1-p*.62);
-    wake(r,e.x+Math.cos(ang)*dist*.58,e.y+Math.sin(ang)*dist*.4,dist*.78+20,10,ang+Math.PI,color,.46*a,phase+i*.1);
-    r.rock(e.x+Math.cos(ang)*dist,e.y+Math.sin(ang)*dist*.65,5+i%3,ang,accent,.5*a,phase+i*.13);
-  }
+  const growth=stage==='cast'?smooth(.06,.82,p):smooth(.02,.56,p),rotation=stage==='cast'?p*.08:-p*.1;
+  renderGround(a*(stage==='cast'?growth:.92),rotation,p);
+  renderPrisms(growth,a*.78,rotation);
+  invoke('prism',e.x,e.y-30,stage==='cast'?30:34*(1-.12*p),stage==='cast'?72:78,rotation*1.4,accent,.78*a,stage==='cast'?growth:1-p*.2);
+  if(stage!=='cast'){for(let i=0;i<6;i++){const angle=angles[i]-p*.55,dist=30+p*62;r.shard(e.x+Math.cos(angle)*dist,e.y+Math.sin(angle)*dist*.66,5+i%3,angle,accent,.34*a,phase+i*.1);r.rock(e.x+Math.cos(angle)*dist*.82,e.y+Math.sin(angle)*dist*.54,3+i%2,angle,accent,.16*a,phase+i*.1);}}
 }
 
 function bowSpin(c,stage){

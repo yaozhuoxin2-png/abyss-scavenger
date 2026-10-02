@@ -59,6 +59,10 @@ uniform sampler2D u_staffNormalMap;
 uniform sampler2D u_staffDistortionMap;
 uniform sampler2D u_staffTrailMap;
 uniform sampler2D u_staffBurstMap;
+uniform sampler2D u_staffCollapseV9Map;
+uniform sampler2D u_staffCollapseV10Map;
+uniform sampler2D u_staffGroundV9Map;
+uniform sampler2D u_staffBurstV9Map;
 uniform float u_time;
 uniform int u_assetsReady;
 in vec2 v_uv;
@@ -242,6 +246,123 @@ void main(){
     vec3 normal=texture(u_staffNormalMap,utilityUv).rgb*2.0-1.0;normal=normalize(vec3(normal.xy*.68,max(.2,normal.z)));float ndl=max(0.0,dot(normal,normalize(vec3(-.34,-.6,.92)))),luma=max(painted.r,max(painted.g,painted.b)),progress=clamp(v_phase,0.0,1.0),radius=length(p),reach=clamp(progress*4.2,0.0,1.35);
     float reveal=1.0-smoothstep(reach-.16,reach+.09,radius),fade=1.0-smoothstep(.68,1.0,progress),erode=smoothstep(.62,1.0,progress)*noise2(uv*22.0+vec2(progress*3.1,-progress));float spec=pow(ndl,10.0),body=painted.a*smoothstep(.12,.42,luma);
     alpha=body*reveal*fade*(1.0-erode*.64);textureColor=painted.rgb*(.78+.48*ndl)*(1.12+v_edge*.045)+vec3(.68,1.0,1.18)*(pow(luma,4.0)*.3+spec*.34);textureMix=1.0;
+  }else if(v_shape==30){
+    // A grounded seal: dark contact well, bevelled rings and broken rune segments.
+    vec2 q=vec2(p.x,p.y*1.58);float r=length(q),a=atan(q.y,q.x),pulse=.5+.5*sin(u_time*1.7+v_phase*3.0);
+    float outer=band(r-.88,.024),bevel=band(r-.73,.016),inner=band(r-.52,.012);
+    float runes=step(.72,fract(a/6.28318*18.0+u_time*.055+v_phase*.7))*smoothstep(.57,.65,r)*(1.0-smoothstep(.78,.87,r));
+    float spokes=pow(max(0.0,cos(a*6.0-u_time*.16)),28.0)*smoothstep(.56,.82,r);
+    float well=(1.0-smoothstep(.08,.48,r))*(.13+.08*pulse),depth=smoothstep(.2,.74,r);
+    alpha=max(max(outer,bevel*.74),max(inner*.62,max(runes*.7,spokes*.3)))+well;
+    material=.18+.34*depth+.22*(outer+bevel)+.13*spokes;
+  }else if(v_shape==31){
+    // Fracture field: radial cracks branch from the seal instead of drawing a flat decal.
+    vec2 q=p;float r=length(q),a=atan(q.y,q.x),cracks=0.0;
+    for(int i=0;i<6;i++){float branch=float(i)*1.0472+.12*sin(u_time*.4+float(i));float delta=abs(sin(a-branch));float reach=smoothstep(.12,.92,r);cracks=max(cracks,(1.0-smoothstep(.018,.082,delta))*reach);}
+    float ring=band(r-.48,.018)*(1.0-smoothstep(.7,.98,r)),chips=step(.72,noise2(q*17.0+u_time*.12))*(1.0-smoothstep(.4,.9,r));
+    alpha=cracks*(.28+.32*smoothstep(.16,.7,r))+ring*.62+chips*.28;material=.26+.42*cracks+.18*ring;
+  }else if(v_shape==32){
+    // Faceted vertical prism: the slanted faces carry their own highlight and shadow.
+    float y=p.y*.5+.5,lean=sin(v_phase*2.4+u_time*.7)*.055*(1.0-y),width=.13+.24*y;
+    float side=abs(p.x+lean)-width,body=1.0-smoothstep(0.0,.045,side),tip=smoothstep(-1.0,-.76,p.y),base=1.0-smoothstep(.76,1.0,p.y);
+    float facet=smoothstep(-.45,.12,p.x+lean),edge=band(side,.018),vein=band(p.x+sin(p.y*7.0+u_time)*.035,.022)*(1.0-smoothstep(.58,.96,y));
+    float bevelLight=body*(.42+.38*facet)*base+edge*.72+vein*.58;
+    alpha=body*(.32+.38*base)+edge*.76+vein*.24;material=.22+bevelLight*.54+tip*.16;
+  }else if(v_shape==33){
+    // Suspended core: a lit sphere with a dark underside, facets and an orbiting cut.
+    vec2 q=vec2(p.x,p.y*1.08);float r=length(q),inside=1.0-smoothstep(.76,.86,r),z=sqrt(max(0.0,1.0-r*r));
+    vec3 normal=normalize(vec3(q.x,q.y,z));float ndl=max(0.0,dot(normal,normalize(vec3(-.42,-.58,.92)))),rim=band(r-.78,.024);
+    float longitude=band(sin(atan(q.y,q.x)*3.0-u_time*1.4+v_phase*2.0),.12)*(1.0-smoothstep(.18,.78,r));
+    float orbit=band(r-(.58+.045*sin(atan(q.y,q.x)*4.0+u_time*.8)),.016);
+    alpha=inside*(.46+.46*ndl)+rim*.8+longitude*.48+orbit*.62;material=.28+.48*ndl+.2*longitude+.14*orbit;
+  }else if(v_shape==34){
+    // Thin orbit bands sit around the core and make the height separation readable.
+    vec2 q=vec2(p.x,p.y*1.28);float r=length(q),a=atan(q.y,q.x),bandA=band(r-(.72+.045*sin(a*3.0+u_time*.8)),.018),bandB=band(r-(.48+.035*cos(a*2.0-u_time*.6)),.012);
+    float ticks=step(.68,fract(a/6.28318*12.0+u_time*.09+v_phase))*smoothstep(.4,.58,r)*(1.0-smoothstep(.78,.86,r));
+    alpha=max(bandA,bandB*.72)+ticks*.52;material=.3+.46*bandA+.24*ticks;
+  }else if(v_shape==35){
+    // Low-contrast volumetric mist is noise-shaped so it does not read as a solid circle.
+    vec2 q=p;float n=fbm(q*3.6+vec2(u_time*.08,-u_time*.05)),r=length(q),falloff=1.0-smoothstep(.3,1.0,r),puff=smoothstep(.37,.7,n);
+    alpha=falloff*puff*.23;material=.34+.22*n;
+  }else if(v_shape==36&&u_assetsReady==1){
+    // V9 authored collapse flipbook: four-by-four frames carry the silhouette; the shader only grades the material.
+    vec2 uv=p*.5+.5;float frame=floor(clamp(v_phase,0.0,.999)*16.0);vec2 cell=vec2(mod(frame,4.0),3.0-floor(frame/4.0));
+    vec2 utilityUv=vec2(fract(uv.x*1.2-u_time*.11),fract(uv.y*1.07+u_time*.047));vec2 flowUv=texture(u_staffFlowMap,utilityUv).rg-.5;
+    vec2 atlasUv=(cell+clamp(uv+flowUv*.012,.006,.994))/vec2(4.0,4.0);vec4 painted=texture(u_staffCollapseV9Map,atlasUv);
+    vec3 normal=texture(u_staffNormalMap,utilityUv).rgb*2.0-1.0;normal=normalize(vec3(normal.xy*.64,max(.24,normal.z)));
+    float ndl=max(0.0,dot(normal,normalize(vec3(-.38,-.62,.9)))),luma=max(painted.r,max(painted.g,painted.b)),edge=pow(max(0.0,painted.a-smoothstep(.22,.68,luma)),.72);
+    float spec=pow(ndl,12.0),tier=clamp(v_edge,0.0,3.0),crystalMask=smoothstep(.3,.66,luma),lateFrame=step(12.0,frame);alpha=min(.99,painted.a*(.09+.91*crystalMask)+edge*.2)*(1.0-lateFrame)*( .94+ndl*.22);vec3 deepIce=vec3(.018,.055,.25),blueIce=vec3(.035,.38,.86),frost=mix(deepIce,blueIce,smoothstep(.18,.72,luma));frost=mix(frost,vec3(.25,.78,1.0),smoothstep(.68,.96,luma)*.58);textureColor=mix(frost,painted.rgb,.2)*(.9+.72*ndl)*(1.22+tier*.08)+vec3(.72,.98,1.0)*(spec*.76+edge*.62);textureMix=1.0;
+  }else if(v_shape==37&&u_assetsReady==1){
+    // V9 grounded contact flipbook: cracks and raised plates remain readable beneath actors.
+    vec2 uv=p*.5+.5;float frame=floor(clamp(v_phase,0.0,.999)*16.0);vec2 cell=vec2(mod(frame,4.0),3.0-floor(frame/4.0));
+    vec2 utilityUv=vec2(fract(uv.x*1.16+u_time*.035),fract(uv.y*1.23-u_time*.021));vec2 atlasUv=(cell+clamp(uv,.006,.994))/vec2(4.0,4.0);vec4 painted=texture(u_staffGroundV9Map,atlasUv);
+    vec3 normal=texture(u_staffNormalMap,utilityUv).rgb*2.0-1.0;normal=normalize(vec3(normal.xy*.78,max(.18,normal.z)));float ndl=max(0.0,dot(normal,normalize(vec3(-.4,-.58,.9)))),luma=max(painted.r,max(painted.g,painted.b));
+    float edge=painted.a*(.45+.55*smoothstep(.42,.8,luma)),contactMask=smoothstep(.36,.74,luma);alpha=min(.94,painted.a*(.06+.94*contactMask)+edge*.16)*(.9+ndl*.24);vec3 groundIce=mix(vec3(.012,.06,.2),vec3(.04,.38,.68),smoothstep(.2,.76,luma));textureColor=mix(groundIce,painted.rgb,.28)*(.76+.7*ndl)+vec3(.4,.9,1.12)*(edge*.62);textureMix=1.0;
+  }else if(v_shape==38&&u_assetsReady==1){
+    // V9 authored burst flipbook: hard facets and debris replace the old generic radial flash.
+    vec2 uv=p*.5+.5;float frame=floor(clamp(v_phase,0.0,.999)*16.0);vec2 cell=vec2(mod(frame,4.0),3.0-floor(frame/4.0));
+    vec2 utilityUv=vec2(fract(uv.x*1.08-u_time*.16),fract(uv.y*1.14+u_time*.08));vec2 atlasUv=(cell+clamp(uv,.006,.994))/vec2(4.0,4.0);vec4 painted=texture(u_staffBurstV9Map,atlasUv);
+    vec3 normal=texture(u_staffNormalMap,utilityUv).rgb*2.0-1.0;normal=normalize(vec3(normal.xy*.72,max(.2,normal.z)));float ndl=max(0.0,dot(normal,normalize(vec3(-.34,-.62,.92)))),luma=max(painted.r,max(painted.g,painted.b)),spec=pow(ndl,10.0),tier=clamp(v_edge,0.0,3.0);
+    float burstMask=smoothstep(.26,.64,luma);alpha=min(1.0,painted.a*(.1+.9*burstMask)+spec*.12)*(.96+ndl*.22);vec3 burstIce=mix(vec3(.03,.08,.32),vec3(.14,.62,.98),burstMask);textureColor=mix(burstIce,painted.rgb,.3)*(.86+.66*ndl)*(1.22+tier*.08)+vec3(.68,1.0,1.18)*(spec*.72+pow(luma,4.0)*.5);textureMix=1.0;
+  }else if(v_shape==39&&u_assetsReady==1){
+    // Authored gleam channel: only crisp silhouette edges, facets and moving glints are added.
+    // This keeps the spell ornate without painting another opaque decal over the floor.
+    vec2 uv=p*.5+.5;float frame=floor(clamp(v_phase,0.0,.999)*16.0);vec2 cell=vec2(mod(frame,4.0),3.0-floor(frame/4.0));
+    vec2 utilityUv=vec2(fract(uv.x*1.26-u_time*.22),fract(uv.y*1.12+u_time*.17));vec2 flow=texture(u_staffDistortionMap,utilityUv).rg-.5;
+    vec2 atlasUv=(cell+clamp(uv+flow*.012,.006,.994))/vec2(4.0,4.0);vec4 painted=texture(u_staffCollapseV9Map,atlasUv);vec2 texel=1.0/vec2(textureSize(u_staffCollapseV9Map,0));
+    float left=texture(u_staffCollapseV9Map,clamp(atlasUv-vec2(texel.x,0.0),.001,.999)).a,right=texture(u_staffCollapseV9Map,clamp(atlasUv+vec2(texel.x,0.0),.001,.999)).a;
+    float up=texture(u_staffCollapseV9Map,clamp(atlasUv-vec2(0.0,texel.y),.001,.999)).a,down=texture(u_staffCollapseV9Map,clamp(atlasUv+vec2(0.0,texel.y),.001,.999)).a;
+    float luma=dot(painted.rgb,vec3(.22,.54,.24)),solid=smoothstep(.12,.48,painted.a),edge=smoothstep(.02,.22,max(0.0,painted.a-min(min(left,right),min(up,down))));
+    vec3 normal=texture(u_staffNormalMap,utilityUv).rgb*2.0-1.0;normal=normalize(vec3(normal.xy*.82,max(.2,normal.z)));float ndl=max(0.0,dot(normal,normalize(vec3(-.42,-.64,.9))));
+    float facet=smoothstep(.48,.86,luma)*solid;float sweep=pow(max(0.0,1.0-abs(fract((p.x*1.3+p.y*.7)+u_time*.32)-.5)*2.0),10.0)*facet;
+    float spec=pow(ndl,14.0)*solid;float jewelSweep=pow(max(0.0,cos(atan(p.y,p.x)*7.0-u_time*.34)),24.0)*smoothstep(.34,.82,length(p))*solid;float needle=pow(max(0.0,cos(atan(p.y,p.x)*8.0-u_time*.16)),36.0)*smoothstep(.38,.7,length(p))*(1.0-smoothstep(.76,.95,length(p)))*solid;alpha=min(.98,edge*2.9+facet*.3+sweep*.68+spec*.56+jewelSweep*.28+needle*.42)*(.96+ndl*.36);vec3 gleamBlue=mix(vec3(.02,.12,.54),vec3(.18,.7,1.0),smoothstep(.2,.78,luma));textureColor=gleamBlue*(1.1+ndl*.82)+vec3(.84,1.0,1.0)*(edge*1.12+sweep*.98+spec*.9+jewelSweep*.7+needle*.86);textureMix=1.0;
+  }else if(v_shape==40&&u_assetsReady==1){
+    // Refined late-stage atlas: explicit facets replace the old rounded debris silhouette.
+    vec2 uv=p*.5+.5;float frame=12.0+floor(clamp(v_phase,0.0,.999)*4.0);vec2 cell=vec2(mod(frame,4.0),3.0-floor(frame/4.0));
+    vec2 utilityUv=vec2(fract(uv.x*1.18-u_time*.13),fract(uv.y*1.24+u_time*.09));vec2 flow=texture(u_staffDistortionMap,utilityUv).rg-.5;vec2 atlasUv=(cell+clamp(uv+flow*.008,.008,.992))/vec2(4.0,4.0);vec4 painted=texture(u_staffCollapseV10Map,atlasUv);vec2 texel=1.0/vec2(textureSize(u_staffCollapseV10Map,0));
+    float left=texture(u_staffCollapseV10Map,clamp(atlasUv-vec2(texel.x,0.0),.001,.999)).a,right=texture(u_staffCollapseV10Map,clamp(atlasUv+vec2(texel.x,0.0),.001,.999)).a;
+    float up=texture(u_staffCollapseV10Map,clamp(atlasUv-vec2(0.0,texel.y),.001,.999)).a,down=texture(u_staffCollapseV10Map,clamp(atlasUv+vec2(0.0,texel.y),.001,.999)).a;
+    // Final matte guard: generated atlases may contain a neutral checkerboard
+    // even after alpha cleanup. Only chromatic ice or near-white highlights
+    // adjacent to chromatic pixels may reach the framebuffer.
+    float luma=dot(painted.rgb,vec3(.22,.54,.24)),chroma=length(painted.rgb-vec3(luma));
+    float colorMask=smoothstep(.018,.075,chroma),highlightMask=smoothstep(.86,.96,luma)*(1.0-smoothstep(.025,.11,chroma));
+    float sourceAlpha=painted.a*max(colorMask,highlightMask),solid=smoothstep(.2,.58,sourceAlpha),edge=smoothstep(.018,.18,max(0.0,sourceAlpha-min(min(left,right),min(up,down))));float plane=smoothstep(.22,.62,luma)*solid;
+    vec3 normal=texture(u_staffNormalMap,utilityUv).rgb*2.0-1.0;normal=normalize(vec3(normal.xy*.86,max(.22,normal.z)));float ndl=max(0.0,dot(normal,normalize(vec3(-.48,-.64,.88)))),spec=pow(ndl,18.0)*solid;float facetGlint=pow(max(0.0,cos(atan(p.y,p.x)*6.0+u_time*.24)),30.0)*smoothstep(.34,.8,length(p))*solid;
+    alpha=min(.96,(sourceAlpha*(.18+.82*plane)+edge*2.8+spec*.62+facetGlint*.42))*(.96+ndl*.3);vec3 facetBlue=mix(vec3(.018,.08,.3),vec3(.08,.48,.92),smoothstep(.18,.78,luma));facetBlue=mix(facetBlue,vec3(.3,.82,1.0),smoothstep(.68,.95,luma)*.52);float brightness=1.22+ndl*.2;textureColor=mix(facetBlue,painted.rgb,.16)*brightness+vec3(.72,.98,1.0)*(edge*1.04+spec*1.18+facetGlint*.98);textureMix=1.0;
+  }else if(v_shape==41){
+    // Portal membrane: an arched, refractive water surface driven by the same
+    // flow, normal and distortion maps as the authored mage materials.
+    vec2 uv=p*.5+.5;float archD;
+    if(p.y<-.12)archD=length(vec2(p.x/.8,(p.y+.12)/.88))-1.0;else archD=max(abs(p.x)-.8,p.y-.88);
+    float mask=aa(archD),rim=band(archD,.026)*mask,ready=float(u_assetsReady);
+    vec2 flowUvA=vec2(fract(uv.x*2.3+u_time*.038),fract(uv.y*3.15-u_time*.061));
+    vec2 flowUvB=vec2(fract(uv.x*3.45-u_time*.031),fract(uv.y*2.25+u_time*.047));
+    vec2 procedural=vec2(sin(uv.y*22.0-u_time*1.35+sin(uv.x*11.0)*.65),cos(uv.x*19.0+u_time*.92+sin(uv.y*13.0)*.55))*.5;
+    vec2 mapped=(texture(u_staffNormalMap,flowUvA).rg-.5)+(texture(u_staffDistortionMap,flowUvB).rg-.5)*.72;
+    vec2 displacement=mix(procedural,mapped,ready);vec3 normal=normalize(vec3(displacement*1.55,.78));
+    float flowA=mix(.5+.5*sin((uv.x*7.0+uv.y*18.0)-u_time*1.15),texture(u_staffFlowMap,flowUvA).r,ready);
+    float flowB=mix(.5+.5*sin((uv.x*17.0-uv.y*12.0)+u_time*.82),texture(u_staffFlowMap,flowUvB).r,ready);
+    float crossing=abs(sin((uv.x*15.0+uv.y*21.0)-u_time*1.24+flowA*2.1))*abs(cos((uv.x*23.0-uv.y*13.0)+u_time*.93+flowB));
+    float caustic=pow(clamp(crossing,0.0,1.0),3.0),sweep=pow(max(0.0,1.0-abs(fract(uv.y*1.45-u_time*.115+sin(uv.x*8.0)*.07)-.5)*2.0),7.0);
+    float ndl=max(0.0,dot(normal,normalize(vec3(-.45,-.58,.9)))),spec=pow(ndl,18.0),fresnel=pow(1.0-max(.0,normal.z),2.0);
+    float depth=smoothstep(.02,.92,uv.y),micro=.5+.5*sin((uv.x+uv.y)*54.0+flowA*4.0-u_time*1.7);
+    float sparkle=pow(max(0.0,.5+.5*sin(uv.x*71.0-uv.y*47.0+u_time*2.1+flowB*5.0)),18.0)*smoothstep(.35,.86,caustic);
+    alpha=mask*(.69+caustic*.19+sweep*.13)+rim*.36;
+    vec3 deep=vec3(.008,.07,.12),water=vec3(.035,.42,.53),jade=vec3(.14,.86,.77),white=vec3(.8,1.0,.94);
+    textureColor=mix(deep,water,.66+.2*depth)+jade*(caustic*.9+sweep*.44+flowA*.13)+white*(spec*.7+rim*.9+micro*caustic*.3+sparkle*.96)+vec3(.03,.23,.24)*fresnel;
+    textureMix=1.0;
+  }else if(v_shape==42){
+    // Volumetric portal interior. Nested parallax arches retreat into a dark
+    // vanishing point, so the doorway reads as traversable space, not a decal.
+    vec2 uv=p*.5+.5;float archD;if(p.y<-.12)archD=length(vec2(p.x/.8,(p.y+.12)/.88))-1.0;else archD=max(abs(p.x)-.8,p.y-.88);
+    float mask=aa(archD),edge=band(archD,.018)*mask;vec2 q=vec2(p.x,p.y*.91+.05),dist=texture(u_staffDistortionMap,vec2(fract(uv.x*1.7-u_time*.021),fract(uv.y*2.1+u_time*.034))).rg-.5;
+    q+=dist*.055;float radius=length(vec2(q.x*.86,q.y)),angle=atan(q.y,q.x);float tunnel=0.0,filaments=0.0;
+    for(int i=0;i<6;i++){float fi=float(i),z=fract(fi/6.0+u_time*.055),scale=.24+z*.86;vec2 rp=q/scale;float arch=abs(length(vec2(rp.x*.9,(rp.y+.16)*.83))-(.58+fi*.012));tunnel+=exp(-arch*(46.0+fi*4.0))*(1.0-z)*.34;filaments+=pow(max(0.0,cos(angle*(5.0+mod(fi,2.0))+fi*1.7-u_time*(.4+fi*.06))),28.0)*exp(-abs(radius-scale*.72)*28.0)*.11;}
+    float vanishing=exp(-length(vec2(q.x*.85,q.y+.04))*4.6),flow=texture(u_staffFlowMap,vec2(fract(uv.x*2.7+u_time*.027),fract(uv.y*3.3-u_time*.044))).r;
+    float dust=pow(max(0.0,.5+.5*sin(uv.x*93.0+uv.y*71.0-u_time*1.2+flow*5.0)),24.0)*smoothstep(.18,.74,vanishing);
+    vec3 abyss=vec3(.002,.012,.028),mid=vec3(.008,.11,.18),cyan=vec3(.05,.52,.58),pearl=vec3(.64,.97,.88);
+    textureColor=mix(abyss,mid,vanishing*.75+flow*.11)+cyan*(tunnel*.9+filaments*.65)+pearl*(tunnel*tunnel*.62+dust*.7+edge*.28);alpha=mask*(.88+tunnel*.1)+edge*.18;textureMix=1.0;
   }
   alpha*=v_color.a;if(alpha<.004)discard;
   outColor=vec4(mix(v_color.rgb*material,textureColor,textureMix),alpha);
@@ -268,7 +389,7 @@ void main(){
   color=color/(vec3(1.0)+color*.32);
   outColor=vec4(color,alpha);
 }`;
-function unavailable(canvas){return {available:false,assetsReady:false,canvas,beginFrame(){},ring(){},disc(){},beam(){},shard(){},sigil(){},pillar(){},cone(){},light(){},trail(){},fissure(){},bladeArc(){},starCore(){},vortex(){},windWake(){},crescent(){},rock(){},royalArc(){},arrow(){},swordRibbon(){},bladeFlash(){},assetSlash(){},assetSpark(){},assetEclipse(){},assetCollapse(){},assetEclipseEdge(){},assetEclipseVeil(){},assetCollapseEdge(){},assetCollapseMist(){},iceTrailSurface(){},iceBurst(){},flush(){return {instances:0,drawCalls:0};}};}
+function unavailable(canvas){return {available:false,assetsReady:false,canvas,beginFrame(){},ring(){},disc(){},beam(){},shard(){},sigil(){},pillar(){},cone(){},light(){},trail(){},fissure(){},bladeArc(){},starCore(){},vortex(){},windWake(){},crescent(){},rock(){},royalArc(){},arrow(){},swordRibbon(){},bladeFlash(){},assetSlash(){},assetSpark(){},assetEclipse(){},assetCollapse(){},assetEclipseEdge(){},assetEclipseVeil(){},assetCollapseEdge(){},assetCollapseMist(){},assetStaffCollapseV9(){},assetStaffCollapseV10(){},assetStaffGroundV9(){},assetStaffBurstV9(){},assetStaffGleamV9(){},iceTrailSurface(){},iceBurst(){},groundSeal(){},crackField(){},prism(){},collapseCore(){},collapseOrbit(){},collapseMist(){},portalSurface(){},portalDepth(){},flush(){return {instances:0,drawCalls:0};}};}
 
 export function createWebGLVfxRenderer(canvas){
   if(!canvas?.getContext)return unavailable(canvas);
@@ -285,18 +406,20 @@ export function createWebGLVfxRenderer(canvas){
   const texture=gl.createTexture(),framebuffer=gl.createFramebuffer();
   gl.bindTexture(gl.TEXTURE_2D,texture);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
   gl.bindFramebuffer(gl.FRAMEBUFFER,framebuffer);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,texture,0);gl.bindFramebuffer(gl.FRAMEBUFFER,null);
-  const assetState={loaded:0,total:12,textures:{}};
+  const assetState={loaded:0,total:16,textures:{}};
   function loadAssetTexture(name,url,repeat=false){
     const target=gl.createTexture();assetState.textures[name]=target;gl.bindTexture(gl.TEXTURE_2D,target);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,0]));gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,repeat?gl.REPEAT:gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,repeat?gl.REPEAT:gl.CLAMP_TO_EDGE);
     if(typeof Image==='undefined')return;const image=new Image();image.decoding='async';image.onload=()=>{gl.bindTexture(gl.TEXTURE_2D,target);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,image);assetState.loaded++;};image.onerror=()=>console.warn('VFX texture failed:',url);image.src=url;
   }
   loadAssetTexture('slash','./vfx-sword-slash-atlas-v8.png');loadAssetTexture('flow','./vfx-sword-flow-v8.png',true);loadAssetTexture('normal','./vfx-sword-normal-v8.png',true);loadAssetTexture('distortion','./vfx-sword-distortion-v8.png',true);loadAssetTexture('spark','./vfx-sword-sparks-atlas-v8.png');
-  loadAssetTexture('eclipse','./vfx-staff-eclipse-atlas-v8.png');loadAssetTexture('collapse','./vfx-staff-collapse-atlas-v8.png');loadAssetTexture('staffFlow','./vfx-staff-flow-v8.png',true);loadAssetTexture('staffNormal','./vfx-staff-normal-v8.png',true);loadAssetTexture('staffDistortion','./vfx-staff-distortion-v8.png',true);loadAssetTexture('staffTrail','./vfx-staff-ice-trail-v8.png');loadAssetTexture('staffBurst','./vfx-staff-ice-burst-v8.png');
+  loadAssetTexture('eclipse','./vfx-staff-eclipse-atlas-v8.png');loadAssetTexture('collapse','./vfx-staff-collapse-atlas-v8.png');loadAssetTexture('staffFlow','./vfx-staff-flow-v8.png',true);loadAssetTexture('staffNormal','./vfx-staff-normal-v8.png',true);loadAssetTexture('staffDistortion','./vfx-staff-distortion-v8.png',true);loadAssetTexture('staffTrail','./vfx-staff-ice-trail-v8.png');loadAssetTexture('staffBurst','./vfx-staff-ice-burst-v8.png');loadAssetTexture('staffCollapseV9','./vfx-staff-collapse-flipbook-v9.png');loadAssetTexture('staffCollapseV10','./vfx-staff-collapse-flipbook-v10-alpha.png?v=8.2-mage-vfx-v19');loadAssetTexture('staffGroundV9','./vfx-staff-ground-contact-v9.png');loadAssetTexture('staffBurstV9','./vfx-staff-burst-flipbook-v9.png');
   const data=new Float32Array(MAX_GPU_INSTANCES*12);let count=0,time=0,camera=[1,0,0],textureWidth=0,textureHeight=0;
   function resize(){const width=Math.max(1,canvas.width||1040),height=Math.max(1,canvas.height||720);if(textureWidth===width&&textureHeight===height)return;gl.bindTexture(gl.TEXTURE_2D,texture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,width,height,0,gl.RGBA,gl.UNSIGNED_BYTE,null);textureWidth=width;textureHeight=height;}
   function push(x,y,width,height,color,alpha,rotation,shape,edge=.04,phase=0){
     if(count>=MAX_GPU_INSTANCES||![x,y,width,height].every(Number.isFinite))return;
-    const rgb=hexColor(color),offset=count++*12;data.set([x,y,Math.max(1,width),Math.max(1,height),rgb[0],rgb[1],rgb[2],clamp(alpha,0,.82),rotation||0,shape,edge,phase],offset);
+    // Material cores may be opaque; broad lights retain the lower safety ceiling.
+    const opacityCeiling=shape>=20&&shape<=42?.98:.82;
+    const rgb=hexColor(color),offset=count++*12;data.set([x,y,Math.max(1,width),Math.max(1,height),rgb[0],rgb[1],rgb[2],clamp(alpha,0,opacityCeiling),rotation||0,shape,edge,phase],offset);
   }
   const api={
     available:true,canvas,get assetsReady(){return assetState.loaded===assetState.total;},
@@ -329,11 +452,24 @@ export function createWebGLVfxRenderer(canvas){
     assetEclipseVeil(x,y,r,rotation,alpha=.56,frame=0,quality=3){push(x,y,r*2,r*2,'#ffffff',alpha,rotation,25,quality,clamp((frame+.01)/8,0,.999));},
     assetCollapseEdge(x,y,r,rotation,alpha=.82,frame=0,quality=3){push(x,y,r*2,r*2,'#ffffff',alpha,rotation,26,quality,clamp((frame+.01)/8,0,.999));},
     assetCollapseMist(x,y,r,rotation,alpha=.5,frame=0,quality=3){push(x,y,r*2,r*2,'#ffffff',alpha,rotation,27,quality,clamp((frame+.01)/8,0,.999));},
+    assetStaffCollapseV9(x,y,r,rotation,alpha=.92,frame=0,quality=3){push(x,y,r*2,r*2,'#ffffff',alpha,rotation,36,quality,clamp(frame,0,.999));},
+    assetStaffCollapseV10(x,y,r,rotation,alpha=.9,frame=0,quality=3){push(x,y,r*2,r*2,'#ffffff',alpha,rotation,40,quality,clamp(frame,0,.999));},
+    assetStaffGroundV9(x,y,r,rotation,alpha=.78,frame=0,quality=3){push(x,y,r*2,r*2*.84,'#ffffff',alpha,rotation,37,quality,clamp(frame,0,.999));},
+    assetStaffBurstV9(x,y,r,rotation,alpha=.96,frame=0,quality=3){push(x,y,r*2,r*2,'#ffffff',alpha,rotation,38,quality,clamp(frame,0,.999));},
+    assetStaffGleamV9(x,y,r,rotation,alpha=.82,frame=0,quality=3){push(x,y,r*2,r*2,'#ffffff',alpha,rotation,39,quality,clamp(frame,0,.999));},
     iceTrailSurface(x,y,length,width,rotation,alpha=.72,age=0,quality=3){push(x,y,length,width,'#ffffff',alpha,rotation,28,quality,clamp(age,0,.999));},
     iceBurst(x,y,r,rotation,alpha=.82,progress=0,quality=3){push(x,y,r*2,r*2,'#ffffff',alpha,rotation,29,quality,clamp(progress,0,.999));},
+    groundSeal(x,y,r,rotation,color,alpha=.42,progress=0){push(x,y,r*2,r*1.58,color,alpha,rotation,30,.04,clamp(progress,0,.999));},
+    crackField(x,y,r,rotation,color,alpha=.42,progress=0){push(x,y,r*2,r*2,color,alpha,rotation,31,.04,clamp(progress,0,.999));},
+    prism(x,y,width,height,rotation,color,alpha=.62,progress=0){push(x,y-height*.46,width,height,color,alpha,rotation,32,.04,clamp(progress,0,.999));},
+    collapseCore(x,y,r,rotation,color,alpha=.8,progress=0){push(x,y,r*2,r*2.16,color,alpha,rotation,33,.04,clamp(progress,0,.999));},
+    collapseOrbit(x,y,r,rotation,color,alpha=.48,progress=0){push(x,y,r*2,r*1.28,color,alpha,rotation,34,.04,clamp(progress,0,.999));},
+    collapseMist(x,y,r,rotation,color,alpha=.3,progress=0){push(x,y,r*2,r*2,color,alpha,rotation,35,.04,clamp(progress,0,.999));},
+    portalSurface(x,y,width,height,color='#52d8c8',alpha=.82,phase=0){push(x,y,width,height,color,alpha,0,41,.04,phase);},
+    portalDepth(x,y,width,height,color='#143b56',alpha=.82,phase=0){push(x,y,width,height,color,alpha,0,42,.04,phase);},
     flush(){
       resize();gl.viewport(0,0,canvas.width,canvas.height);gl.bindFramebuffer(gl.FRAMEBUFFER,framebuffer);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
-      if(count){gl.useProgram(effectProgram);gl.bindVertexArray(effectVao);gl.bindBuffer(gl.ARRAY_BUFFER,instanceBuffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,data.subarray(0,count*12));gl.uniform2f(gl.getUniformLocation(effectProgram,'u_resolution'),canvas.width,canvas.height);gl.uniform3f(gl.getUniformLocation(effectProgram,'u_camera'),camera[0],camera[1],camera[2]);gl.uniform1f(gl.getUniformLocation(effectProgram,'u_time'),time);gl.uniform1i(gl.getUniformLocation(effectProgram,'u_assetsReady'),api.assetsReady?1:0);for(const [index,[name,uniform]] of [['slash','u_slashAtlas'],['flow','u_flowMap'],['normal','u_normalMap'],['distortion','u_distortionMap'],['spark','u_sparkAtlas'],['eclipse','u_eclipseAtlas'],['collapse','u_collapseAtlas'],['staffFlow','u_staffFlowMap'],['staffNormal','u_staffNormalMap'],['staffDistortion','u_staffDistortionMap'],['staffTrail','u_staffTrailMap'],['staffBurst','u_staffBurstMap']].entries()){gl.activeTexture(gl.TEXTURE1+index);gl.bindTexture(gl.TEXTURE_2D,assetState.textures[name]);gl.uniform1i(gl.getUniformLocation(effectProgram,uniform),1+index);}gl.enable(gl.BLEND);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.drawArraysInstanced(gl.TRIANGLES,0,6,count);}
+      if(count){gl.useProgram(effectProgram);gl.bindVertexArray(effectVao);gl.bindBuffer(gl.ARRAY_BUFFER,instanceBuffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,data.subarray(0,count*12));gl.uniform2f(gl.getUniformLocation(effectProgram,'u_resolution'),canvas.width,canvas.height);gl.uniform3f(gl.getUniformLocation(effectProgram,'u_camera'),camera[0],camera[1],camera[2]);gl.uniform1f(gl.getUniformLocation(effectProgram,'u_time'),time);gl.uniform1i(gl.getUniformLocation(effectProgram,'u_assetsReady'),api.assetsReady?1:0);for(const [index,[name,uniform]] of [['slash','u_slashAtlas'],['flow','u_flowMap'],['normal','u_normalMap'],['distortion','u_distortionMap'],['spark','u_sparkAtlas'],['eclipse','u_eclipseAtlas'],['collapse','u_collapseAtlas'],['staffFlow','u_staffFlowMap'],['staffNormal','u_staffNormalMap'],['staffDistortion','u_staffDistortionMap'],['staffTrail','u_staffTrailMap'],['staffBurst','u_staffBurstMap'],['staffCollapseV9','u_staffCollapseV9Map'],['staffCollapseV10','u_staffCollapseV10Map'],['staffGroundV9','u_staffGroundV9Map'],['staffBurstV9','u_staffBurstV9Map']].entries()){gl.activeTexture(gl.TEXTURE0+index);gl.bindTexture(gl.TEXTURE_2D,assetState.textures[name]);gl.uniform1i(gl.getUniformLocation(effectProgram,uniform),index);}gl.enable(gl.BLEND);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.drawArraysInstanced(gl.TRIANGLES,0,6,count);}
       gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.useProgram(postProgram);gl.bindVertexArray(postVao);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.uniform1i(gl.getUniformLocation(postProgram,'u_scene'),0);gl.uniform1f(gl.getUniformLocation(postProgram,'u_time'),time);gl.uniform1f(gl.getUniformLocation(postProgram,'u_strength'),count>180?.35:.7);gl.disable(gl.BLEND);gl.drawArrays(gl.TRIANGLES,0,6);
       return {instances:count,drawCalls:count?2:1};
     }

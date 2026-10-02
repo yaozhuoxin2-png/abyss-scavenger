@@ -1,5 +1,10 @@
 # 美术来源与许可
 
+## v8.4 立体混合冰晶
+
+- `mage-collapse-state.mjs`、`mage-collapse-3d.mjs`：本项目原创的晶体几何、材质、动作时间线和碎块运动；冷雾由连贯噪声烘焙为 16 帧透明图集，不是商业游戏素材或手绘图片。
+- `vendor/three.module.min.js`、`vendor/three.core.js`：Three.js 0.186.1 的官方 npm 发行文件，MIT 许可；完整许可保存在 `vendor/THREE-LICENSE.txt`。
+
 ## 在线参考素材
 
 - `Pixel art top down dungeon tileset and rpg character with animations`

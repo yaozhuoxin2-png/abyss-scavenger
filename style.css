@@ -65,3 +65,6 @@ body.opening-active{overflow:hidden}
 .merchant-hotspot>span{top:auto;bottom:100%;transform:translate(-50%,-8px)}
 .world-qa-panel{position:fixed;z-index:20;left:12px;bottom:12px;padding:10px;background:#081820ed;border:1px solid #71b0be;border-radius:6px;display:flex;gap:8px;align-items:center;font-size:12px;color:#deedf1}
 .world-qa-panel button{padding:7px 10px}
+#arena-mage{position:absolute;left:0;top:50%;width:100%;height:auto;aspect-ratio:1040/720;transform:translateY(-50%);z-index:2;pointer-events:none;image-rendering:auto;cursor:default}
+.mage-inspection{position:fixed;z-index:25;left:12px;bottom:12px;max-width:calc(100vw - 24px);display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:10px 12px;border:1px solid #436887;border-radius:8px;background:#07111de8;box-shadow:0 6px 25px #0008;font-size:12px;color:#bed5e7}
+.mage-inspection button{padding:7px 10px;font-size:12px}.mage-inspection output{min-width:230px;color:#8fb4cd}.mage-inspection input{width:130px;accent-color:#7fcff0}

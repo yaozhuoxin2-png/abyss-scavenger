@@ -1,17 +1,18 @@
 {
-  "build": "8.3-world-repair-1",
+  "build": "8.4-mage-hybrid-1",
+  "worldBuild": "8.3-world-repair-1",
   "files": {
     ".nojekyll": {
       "bytes": 1,
       "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
     },
     "ART_SOURCES.md": {
-      "bytes": 2855,
-      "sha256": "f2424d7a5bd61ccba674560aef2d94ef74fed7272e15b12362fbf2f581a331ee"
+      "bytes": 3278,
+      "sha256": "a2111a24e8b33125f0c1f4b01078535d0708ce020f43eb1e8e094725a3dbfbbd"
     },
     "README.md": {
-      "bytes": 14311,
-      "sha256": "43cbb06887ec1f858acc9cccf110e311dd8f0bf060944c584a05e3e3d558f3cd"
+      "bytes": 15079,
+      "sha256": "4762ef18b140dd1785db2e81789b174df5f8f5efd829070cf0cc5f195ca0e7f7"
     },
     "animation.mjs": {
       "bytes": 4796,
@@ -58,8 +59,8 @@
       "sha256": "d19dbc0e874dc6f48cb303526ea5b762a3f5f7728fe91c77e70de053caed72bd"
     },
     "game.mjs": {
-      "bytes": 242975,
-      "sha256": "30ee920b9c52d08e23b075af1dd60fa2a199bff929799be2d7a7bd1404a93beb"
+      "bytes": 247522,
+      "sha256": "2471d02db5a1f0073ee38e58fc4030d278260df49745b88f44f219016bd4621d"
     },
     "hero-bow-keyposes-v8.png": {
       "bytes": 2081860,
@@ -158,8 +159,8 @@
       "sha256": "5cdee9e08dd30d99b3b5db1f96f810f583b985bf36f61c99c08a3b8bf767dccf"
     },
     "index.html": {
-      "bytes": 8313,
-      "sha256": "e95d1f2ffdab96aa98d2a9d0348702b70c889e1f29f5fc0b006dcfe952b8e6bf"
+      "bytes": 8311,
+      "sha256": "50099c0f0f81f1c5f2063f70081b3898ca6b40908d56158792babc9e6aec73c0"
     },
     "loot-armor-epic-v8.png": {
       "bytes": 466561,
@@ -229,6 +230,14 @@
       "bytes": 146159,
       "sha256": "fd3a12af0f15334bc32f7a18989b2cd3a4b32a8b7428712a0991aa331e270507"
     },
+    "mage-collapse-3d.mjs": {
+      "bytes": 25918,
+      "sha256": "b112791553454b910144eeb256c4c47e3c109f1632429aff7779e4fe73a06512"
+    },
+    "mage-collapse-state.mjs": {
+      "bytes": 4166,
+      "sha256": "4cda5ef37732673185ec43d836137eb4ed9db4499ea0c233cb6eddfb228dc680"
+    },
     "merchant-portrait-v8.webp": {
       "bytes": 98010,
       "sha256": "b3c699c54d4c79610bbe04d4b5f9dc6c287c51b75fbf63815abe2d74e6376fd6"
@@ -278,8 +287,8 @@
       "sha256": "3556fe85331a9d1fe02d1abb40214a03735f68c64d6540d9a22a2e29c4a2971b"
     },
     "serve.mjs": {
-      "bytes": 990,
-      "sha256": "ab2ae468a95dbbcd38b1cfe7aecca5016f486e499b44bf3cc46d9b2561722cc3"
+      "bytes": 1029,
+      "sha256": "1c1e82d496c6ec2ad06d1e1f8916748c2d1eddc0ff138a1aca298c2bcc4e472f"
     },
     "sprite-motion.mjs": {
       "bytes": 2789,
@@ -290,20 +299,32 @@
       "sha256": "e4f0b069dbed2bca122df7ea7ccfeb81dcb11881bb3c43ebc4c5296d6ae2dd8b"
     },
     "style.css": {
-      "bytes": 35015,
-      "sha256": "87ff90ab99ff5e72d52f8be8ad64ab9f6a3e488a619c21bf1ccf966909b19fe6"
+      "bytes": 35655,
+      "sha256": "e4df8c6eb1ef946a70d185a222bad9c5476b3fc2f7dbaf7eef427d0d97663e65"
     },
     "sword-vfx-material-qa.html": {
       "bytes": 3453,
       "sha256": "021cf518920a1eb448a44e4151d632490ebb3dac2f4fdef220935df7b1cce0c8"
     },
     "test.mjs": {
-      "bytes": 67199,
-      "sha256": "69f68be18216f5c9abc8c54f1402690f20d7d50a5ff06346b8b5a62b3462b4bd"
+      "bytes": 70115,
+      "sha256": "5b90efa4c3cc2503ef87a763480bc45b0cae9e36e38b8c76c1ebe45024f0fe48"
     },
     "tools/audit-release.mjs": {
-      "bytes": 1964,
-      "sha256": "82bafcb69a5622e9c89c97a8229447f710490dc19bfd72cb349cf11f23865c78"
+      "bytes": 2282,
+      "sha256": "07eef4f339110138a216f70934d33d48058173bbfc4b3fb1983d8ec1db743bf1"
+    },
+    "vendor/THREE-LICENSE.txt": {
+      "bytes": 1081,
+      "sha256": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc"
+    },
+    "vendor/three.core.js": {
+      "bytes": 415816,
+      "sha256": "3b346151f65ffdfca3e4c002bd58966b78c423087fb48a873f83200de1bffc48"
+    },
+    "vendor/three.module.min.js": {
+      "bytes": 392831,
+      "sha256": "3bc833fceb6577bd1a380388f832ae61cd6e2f78ad02b0bf0d5adf5a4a9334fe"
     },
     "vfx-renderer.mjs": {
       "bytes": 25725,

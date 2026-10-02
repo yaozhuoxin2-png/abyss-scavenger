@@ -4,12 +4,16 @@ import {motionFrame,motionSample} from './sprite-motion.mjs';
 import {drawModernTargeting,drawFrozenStatus} from './vfx-renderer.mjs';
 import {createWebGLVfxRenderer} from './webgl-vfx.mjs?v=8.3-world-repair-1';
 import {createCombatVfxSystem} from './combat-vfx.mjs?v=8.3-world-repair-1';
+import {createMageCollapseRenderer} from './mage-collapse-3d.mjs?v=8.4-mage-hybrid-1';
+import {MAGE_COLLAPSE_DURATION,MAGE_COLLAPSE_IMPACT} from './mage-collapse-state.mjs';
 import {WORLD_BUILD,portalGeometry,merchantGeometry,pickWorldProp,portalOcclusion,protectWorldRenderer,drawMerchantScene} from './world-scene.mjs?v=8.3-world-repair-1';
 import {OPENING_STORY,drawOpeningStoryFrame} from './opening-cg.mjs?v=8.2-cinema-merchant-v2';
 const $=id=>document.getElementById(id),canvas=$('arena'),ctx=canvas.getContext('2d'),modal=$('modal');
 // The world remains deterministic Canvas2D gameplay; all combat VFX use a
 // separate WebGL2 instanced pipeline with masking and a bounded post-process.
 const fxCanvas=$('arena-fx'),propsCanvas=$('arena-props'),propsCtx=propsCanvas.getContext('2d'),fxRenderer=protectWorldRenderer(createWebGLVfxRenderer(fxCanvas)),combatVfx=createCombatVfxSystem(fxRenderer);
+const mageCanvas=document.createElement('canvas');mageCanvas.id='arena-mage';mageCanvas.width=1040;mageCanvas.height=720;mageCanvas.setAttribute('aria-hidden','true');fxCanvas.after?.(mageCanvas);
+const mageRenderer=createMageCollapseRenderer(mageCanvas,canvas);let mageSequenceId=0,mageInspectionHold=null,mageInspectionHits=0;
 if(fxCanvas?.dataset)fxCanvas.dataset.renderer=fxRenderer.available?'webgl2-instanced':'canvas-fallback';
 if(fxRenderer.missingWorldMethods.length)console.warn('发布文件不配套，已启用传送门安全回退：',fxRenderer.missingWorldMethods.join(', '));
 if(fxCanvas?.dataset)fxCanvas.dataset.build=WORLD_BUILD;
@@ -148,6 +152,7 @@ function skillImpactFlourish(name,kind,point){
 function heroSkillCast(name,kind,point,origin=null){
   const life=kind==='staff'?(name==='spin'?.72:.84):.48,theme=skillThemeFor(name,kind),quality=Math.max(0,Math.min(3,(p.equipment.weapon.rarity??0)-2)),area=skillDamageAreaFor(name,kind),source=origin||p;
   effects.push({type:'heroSkillCast',name,kind,quality,areaShape:area?.shape,radius:area?.radius||0,width:area?.width||0,explosionRadius:area?.explosionRadius||0,ox:source.x,oy:source.y,x:point.x,y:point.y,angle:Math.atan2(point.y-source.y,point.x-source.x),color:theme.color,accent:theme.accent,life,max:life});
+  if(kind==='staff'&&name==='frost')effects.push({type:'mageCollapse',kind,name,x:point.x,y:point.y,radius:area.radius,quality,seed:++mageSequenceId,impactAt:MAGE_COLLAPSE_IMPACT,life:MAGE_COLLAPSE_DURATION,max:MAGE_COLLAPSE_DURATION});
 }
 function heroSkillSignature(name,kind,point,marks=[],origin=null){
   const theme=skillThemeFor(name,kind),life=kind==='staff'?(name==='frost'?1.28:.95):kind==='bow'&&name==='frost'?1:.82,quality=Math.max(0,Math.min(3,(p.equipment.weapon.rarity??0)-2)),area=skillDamageAreaFor(name,kind),source=origin||p;
@@ -167,7 +172,7 @@ function bossImpactFlourish(x,y,r,angle=0){
   effects.push({type:'bossSignature',x,y,r:Math.max(82,r)*1.12,angle,color:theme.color,accent:theme.accent,floor,phase:'impact',seed:floor*271+elapsed*29,life:1.08,max:1.08});
   for(let i=0;i<24;i++){const a=i*Math.PI/12+rand(-.06,.06),speed=rand(90,240),life=rand(.54,.96);effects.push({type:'vfxShard',x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed*.58-34,size:rand(4,10),angle:a,color:i%4?theme.color:theme.accent,kind:'boss',life,max:life});}
 }
-const EFFECT_LIMITS={particle:96,vfxShard:80,energyRibbon:24,arcLightning:12,impactBloom:10,castPillar:7,alchemyPillar:4,bossSignature:7,skillSigil:12,bossGlyph:7,bossImpact:12,ring:36,rune:16,ghost:12,text:24,abilityAccent:10,slash:12,frostBurst:10,heroSkillCast:4,heroSkillSignature:7,heroSkillHit:18};
+const EFFECT_LIMITS={particle:96,vfxShard:80,energyRibbon:24,arcLightning:12,impactBloom:10,castPillar:7,alchemyPillar:4,bossSignature:7,skillSigil:12,bossGlyph:7,bossImpact:12,ring:36,rune:16,ghost:12,text:24,abilityAccent:10,slash:12,frostBurst:10,heroSkillCast:4,heroSkillSignature:7,heroSkillHit:18,mageCollapse:3};
 const MAX_EFFECTS=260;
 function trimEffects(){
   const counts=Object.create(null),kept=[];
@@ -562,7 +567,13 @@ function drawV7Cell(image,cols,rows,col,row,x,y,width,height,options={}){
   ctx.save();ctx.translate(x,y+hover);
   const tier=Math.max(options.weaponTier||0,options.armorTier||0);
   if(tier){ctx.shadowColor=options.accent||'#d7b467';ctx.shadowBlur=3+tier*2;}
-  ctx.globalAlpha=options.alpha??1;ctx.drawImage(spriteBuffer,-width/2,-height*240/256,width,height);ctx.restore();
+  ctx.globalAlpha=options.alpha??1;ctx.drawImage(spriteBuffer,-width/2,-height*240/256,width,height);
+  if((options.alpha??1)>.7&&action!=='death'){
+    const stable=action==='idle'&&(!options.body||elapsed-(body.visualStart||0)>=.09),alphaImage=stable?base:body.lastVisual||spriteBuffer;
+    const alphaToken=stable?false:`${source?.src||image.src||''}:${col}:${row}:${action}:${sample.first}:${sample.next}:${sample.blend.toFixed(4)}:${Math.min(1,Math.max(0,(elapsed-(body.visualStart||0))/.09)).toFixed(4)}`;
+    mageRenderer.recordActor(alphaImage,-width/2,-height*240/256,width,height,y,ctx.getTransform?.(),alphaToken);
+  }
+  ctx.restore();
   if(options.elite){ctx.save();ctx.strokeStyle='#e8b64f';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(x,y+2,width*.23,5,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
   return true;
 }
@@ -581,7 +592,7 @@ function drawHeroWalk(body,kind,x,y,width=104,height=124,options={}){
   paint.clearRect(0,0,256,256);paint.drawImage(cell,0,0);
   if(options.tint){paint.save();paint.globalCompositeOperation='source-atop';paint.globalAlpha=.045+(options.armorTier||0)*.025;paint.fillStyle=options.tint;paint.fillRect(0,0,256,256);paint.restore();}
   if(options.hit){paint.save();paint.globalCompositeOperation='source-atop';paint.globalAlpha=.28;paint.fillStyle='#ffdab0';paint.fillRect(0,0,256,256);paint.restore();}
-  ctx.save();ctx.translate(x+weightShift,y);ctx.rotate(bodyRoll*(direction.flip?-1:1));if(direction.flip)ctx.scale(-1,1);const tier=Math.max(options.weaponTier||0,options.armorTier||0);if(tier){ctx.shadowColor=options.accent||'#d7b467';ctx.shadowBlur=3+tier*2;}ctx.globalAlpha=options.alpha??1;ctx.drawImage(spriteBuffer,-width/2,-height*240/256,width,height);ctx.restore();
+  ctx.save();ctx.translate(x+weightShift,y);ctx.rotate(bodyRoll*(direction.flip?-1:1));if(direction.flip)ctx.scale(-1,1);const tier=Math.max(options.weaponTier||0,options.armorTier||0);if(tier){ctx.shadowColor=options.accent||'#d7b467';ctx.shadowBlur=3+tier*2;}ctx.globalAlpha=options.alpha??1;ctx.drawImage(spriteBuffer,-width/2,-height*240/256,width,height);mageRenderer.recordActor(cell,-width/2,-height*240/256,width,height,y,ctx.getTransform?.(),false);ctx.restore();
   return true;
 }
 function facingRow(angle=0){const x=Math.cos(angle),y=Math.sin(angle);return Math.abs(x)>Math.abs(y)?(x<0?1:2):(y<0?3:0);}
@@ -671,6 +682,8 @@ function queueGpuProjectile(s,t){
   fxRenderer.shard(s.x,s.y,4+(s.rarity||0)*.8,angle,color,.55,t);
 }
 function queueGpuEffect(e,t){
+  if(e.type==='mageCollapse')return;
+  if(mageRenderer.ready&&e.kind==='staff'&&e.name==='frost'&&(e.type==='heroSkillCast'||e.type==='heroSkillSignature'))return;
   const rawAlpha=clamp(e.life/e.max,0,1),progress=1-rawAlpha,release=clamp((progress-.58)/.42,0,1),alpha=e.type?.startsWith('heroSkill')?1-release*release*(3-2*release):rawAlpha,color=e.color||'#d7c28b',accent=e.accent||color,phase=t*.55+(e.seed||0)*.001;
   if(e.type==='skillSigil'||e.type==='bossGlyph'){fxRenderer.sigil(e.x,e.y,e.r,color,.42*alpha,(e.angle||0)+progress*.5,phase);fxRenderer.ring(e.x,e.y,e.r*.88,accent,.3*alpha,.022,.62,-progress*.35,phase);}
   else if(e.type==='impactBloom'){fxRenderer.disc(e.x,e.y,e.r,color,.13*alpha,.62,0,phase);fxRenderer.ring(e.x,e.y,e.r*(.45+.55*progress),accent,.46*alpha,.03,.62,0,phase);fxRenderer.light(e.x,e.y,e.r*.72,color,.12*alpha,.66,phase);}
@@ -814,6 +827,7 @@ function drawNextGate(gate,t){
 }
 function draw(t){
   const shakeX=screenShake>0?rand(-screenShake,screenShake):0,shakeY=screenShake>0?rand(-screenShake,screenShake):0;
+  if(mageRenderer.ready)mageRenderer.beginFrame(effects,{zoom:1+cameraZoom,shakeX,shakeY,map});
   ctx.clearRect(0,0,1040,720);propsCtx.clearRect(0,0,1040,720);fxRenderer.beginFrame({time:t,zoom:1+cameraZoom,shakeX,shakeY});ctx.save();propsCtx.save();if(cameraZoom>0){for(const paint of [ctx,propsCtx]){paint.translate(520,360);paint.scale(1+cameraZoom,1+cameraZoom);paint.translate(-520,-360);}}if(screenShake>0){ctx.translate(shakeX,shakeY);propsCtx.translate(shakeX,shakeY);screenShake*=.86;}
   const floorPalettes=[['#1a2828','#1b2b2a','#1c2b2b','#192625'],['#292522','#2c2926','#282522','#2a2825'],['#23232d','#252633','#22232e','#242530'],['#2a2024','#2d2227','#261d22','#302328'],['#17262e','#1a2a33','#18242d','#1b2d35'],['#28251c','#2d291e','#242219','#302c20']],floorColors=floorPalettes[floor-1]||floorPalettes.at(-1);
   for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){const seed=(x*37+y*61)%17;ctx.fillStyle=floorColors[seed%4];ctx.fillRect(x*TILE,y*TILE,TILE,TILE);ctx.strokeStyle='#0e171a';ctx.lineWidth=1;ctx.strokeRect(x*TILE+.5,y*TILE+.5,TILE-1,TILE-1);if(seed%4===0){ctx.fillStyle='#61706625';ctx.fillRect(x*TILE+7,y*TILE+12,8,2);ctx.fillRect(x*TILE+27,y*TILE+30,4,2);}if(seed%7===0){ctx.strokeStyle='#0c161855';ctx.beginPath();ctx.moveTo(x*TILE+5,y*TILE+3);ctx.lineTo(x*TILE+13,y*TILE+14);ctx.lineTo(x*TILE+11,y*TILE+23);ctx.stroke();}}
@@ -823,6 +837,7 @@ function draw(t){
   for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++)if(map[y][x])drawObstacleTile(x,y,t);
   for(const [tx,ty] of [[3,3],[22,3],[3,14],[22,14]]){const x=tx*TILE+20,y=ty*TILE+10;const glow=ctx.createRadialGradient(x,y,2,x,y,105);glow.addColorStop(0,'#e6a46128');glow.addColorStop(1,'#d78b4500');ctx.fillStyle=glow;ctx.fillRect(x-105,y-105,210,210);ctx.fillStyle='#493b2c';ctx.fillRect(x-6,y,12,18);ctx.fillStyle='#ba8051';ctx.fillRect(x-7,y-4,14,5);ctx.fillStyle='#dcb16b';ctx.fillRect(x-4,y-11-Math.sin(t*8+tx)*2,8,10);ctx.fillStyle='#f8db94';ctx.fillRect(x-2,y-8,4,6);}
   if(path.length){ctx.strokeStyle='#8fceac4f';ctx.lineWidth=1;ctx.setLineDash([3,6]);ctx.beginPath();ctx.moveTo(p.x,p.y);for(const n of path)ctx.lineTo(n.x,n.y);ctx.stroke();ctx.setLineDash([]);const end=path[path.length-1];ctx.strokeStyle='#9dd3b7';ctx.beginPath();ctx.ellipse(end.x,end.y,10,5,0,0,Math.PI*2);ctx.stroke();}
+  if(mageRenderer.ready)mageRenderer.captureFloor();
   if(pendingCast){
     const info=skillInfoFor(pendingCast),kind=p.equipment.weapon.kind,theme=skillThemeFor(pendingCast,kind),range=castRangeFor(pendingCast,kind),preview=clampedCastPoint(aim,range),radius=pendingCast==='dash'?18:skillDamageRadius(pendingCast,kind)||(pendingCast==='frost'?(kind==='sword'?125:165):(kind==='sword'?125:48)),color=preview.within?theme.color:'#dd6659';
     ctx.save();ctx.setLineDash([8,7]);ctx.strokeStyle=preview.within?theme.color:'#9d514c';ctx.lineWidth=2;ctx.globalAlpha=.78;ctx.beginPath();ctx.arc(p.x,p.y,range,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(preview.x,preview.y);ctx.stroke();
@@ -840,6 +855,7 @@ function draw(t){
   for(const s of shots.slice(-48))queueGpuProjectile(s,t);
   for(const effect of effects)queueGpuEffect(effect,t);
   fxRenderer.flush();
+  if(mageRenderer.ready)mageRenderer.render();
   for(const e of effects){const alpha=clamp(e.life/e.max,0,1),progress=1-alpha;ctx.globalAlpha=alpha;if(e.type==='text')label(e.text,e.x,e.y,e.color,14);if(e.type==='particle'){ctx.save();ctx.translate(e.x,e.y);const s=e.size||3,heading=Math.atan2(e.vy||0,e.vx||1);ctx.rotate(heading+Math.PI/4);ctx.fillStyle=e.color;ctx.shadowColor=e.color;ctx.shadowBlur=e.glow?8:2;ctx.beginPath();ctx.moveTo(0,-s);ctx.lineTo(s*.62,0);ctx.lineTo(0,s);ctx.lineTo(-s*.62,0);ctx.closePath();ctx.fill();ctx.restore();}if(e.type==='ring'){ctx.save();const radius=e.r*(1-e.life/e.max*.5);ctx.strokeStyle=e.color;ctx.lineWidth=e.width||3;ctx.beginPath();ctx.arc(e.x,e.y,radius,0,Math.PI*2);ctx.stroke();ctx.restore();}if(e.type==='rune'){ctx.save();ctx.translate(e.x,e.y);ctx.rotate(e.angle+progress*1.8);ctx.strokeStyle=e.color;ctx.lineWidth=2;ctx.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx.moveTo(Math.cos(a)*e.r*.72,Math.sin(a)*e.r*.72);ctx.lineTo(Math.cos(a)*e.r,Math.sin(a)*e.r);}ctx.stroke();ctx.beginPath();ctx.arc(0,0,e.r*(.7+.3*progress),0,Math.PI*2);ctx.stroke();ctx.restore();}if(e.type==='ghost'){const ghostKind=e.kind||p.equipment.weapon.kind,ghostArt=heroV7Arts[ghostKind],ghostFacing=e.facing??p.facing,ghostRow=e.row??1;ctx.globalAlpha=alpha*.42;drawContactShadow(e.x,e.y,22,.18);if(!drawV7Cell(ghostArt,8,6,direction8(ghostFacing),ghostRow,e.x,e.y,100,118,{action:ghostRow,facing:ghostFacing,alpha:alpha*.5,tint:e.mirror?'#9d71d1':weaponColor(p.equipment.weapon),armorTier:p.equipment.armor?.rarity||0,weaponTier:p.equipment.weapon?.rarity||0,accent:weaponColor(p.equipment.weapon)}))drawAnimatedSprite(heroArt,facingRow(ghostFacing),Math.floor(t*8)%4,e.x,e.y,82,100,false,false,false);ctx.globalAlpha=1;}}ctx.globalAlpha=1;
   if(cleared&&!cinematic)drawMerchant(t,true);
   const vignette=ctx.createRadialGradient(520,360,170,520,360,620);vignette.addColorStop(0,'#010b1000');vignette.addColorStop(1,'#01090caa');ctx.fillStyle=vignette;ctx.fillRect(0,0,1040,720);
@@ -865,8 +881,9 @@ function frame(now){
   let dt=slowMotion>0?realDt*.35:realDt;
   if(hitStop>0){hitStop=Math.max(0,hitStop-realDt);dt=0;}
   try{
-    if(!paused&&running&&dt>0)update(dt);
-    if(!paused&&dt>0){
+    if(mageInspectionHold!==null&&(paused||!running||finished)){mageInspectionHold=null;const control=$('mage-qa-frame');if(control)control.value='live';}
+    if(!paused&&running&&dt>0&&mageInspectionHold===null)update(dt);
+    if(!paused&&dt>0&&mageInspectionHold===null){
       for(const e of effects){e.life-=dt;if(e.type==='text')e.y-=25*dt;if(e.type==='particle'||e.type==='vfxShard'){e.x+=e.vx*dt;e.y+=e.vy*dt;}}
       effects=effects.filter(e=>e.life>0);screenFlash=Math.max(0,screenFlash-dt*.8);toastTime-=dt;bannerTime-=dt;
       if(toastTime<=0)$('toast').classList.remove('show');if(bannerTime<=0)$('wave-banner').classList.remove('show');
@@ -906,6 +923,24 @@ $('modal-content').addEventListener('click',event=>{const button=event.target.cl
 $('pause').onclick=pauseScreen;$('help').onclick=showHelp;$('inventory').onclick=()=>running&&showInventory();$('sound').onclick=()=>{soundEnabled=!soundEnabled;$('sound').textContent=`音效：${soundEnabled?'开':'关'}`;$('sound').setAttribute('aria-pressed',String(soundEnabled));tone(500);};$('basic').onclick=attack;$('dash').onclick=()=>skill('dash');$('spin').onclick=()=>skill('spin');$('frost').onclick=()=>skill('frost');$('potion').onclick=potion;$('interact').onclick=interact;$('skip-opening').onclick=finishOpeningCG;window.addEventListener('pagehide',()=>{if(running&&!finished){commitRunProgress('页面关闭前');saveRunSnapshot('页面关闭前保存');}saveProfile('页面关闭前保存');});
 updateUI();if(skipOpeningCG)startScreen();else startOpeningCG();requestAnimationFrame(frame);
 // Local-only, visible QA controls exercise the real browser input / rendering path.
+if(localQaSafe&&runtimeParams.has('mage-qa')){
+  const panel=document.createElement('div');panel.className='mage-inspection';
+  panel.innerHTML='<span>法师二技能 · 真实战场 / 原速 / 无预览滤镜</span><button id="mage-qa-start">进入法师测试战场</button><button id="mage-qa-cast">实战施法</button><button id="mage-qa-stress">三次叠放测试</button><label>逐帧检查<select id="mage-qa-frame"><option value="live">原速播放</option><option value=".2">0.20 秒 · 地面凝霜</option><option value=".48">0.48 秒 · 晶体长出</option><option value=".7">0.70 秒 · 命中瞬间</option><option value="1.12">1.12 秒 · 倒伏破碎</option><option value="1.68">1.68 秒 · 退场</option></select></label><output id="mage-qa-status">正在加载立体渲染器</output>';
+  document.body.append(panel);
+  const focus=()=>({x:500,y:380});
+  $('mage-qa-start').onclick=()=>{mageInspectionHold=null;chosen='staff';start();};
+  $('mage-qa-cast').onclick=()=>{mageInspectionHold=null;$('mage-qa-frame').value='live';if(!canAct())return;p.cd.frost=0;p.mana=p.maxMana;skill('frost',focus(),true);};
+  $('mage-qa-frame').onchange=event=>{
+    if(!running||finished)return;const value=event.target.value;
+    mageInspectionHold=value==='live'?null:Number(value);
+    if(mageInspectionHold!==null){
+      effects=effects.filter(effect=>!['mageCollapse','heroSkillCast','heroSkillSignature'].includes(effect.type));
+      effects.push({type:'mageCollapse',kind:'staff',name:'frost',...focus(),radius:165,quality:0,seed:741,impactAt:MAGE_COLLAPSE_IMPACT,life:MAGE_COLLAPSE_DURATION-mageInspectionHold,max:MAGE_COLLAPSE_DURATION});
+    }
+  };
+  $('mage-qa-stress').onclick=()=>{if(!running||finished)return;mageInspectionHold=null;$('mage-qa-frame').value='live';for(let i=0;i<3;i++)effects.push({type:'mageCollapse',kind:'staff',name:'frost',x:440+i*85,y:380+i*26,radius:165,quality:3,seed:++mageSequenceId,impactAt:MAGE_COLLAPSE_IMPACT,life:MAGE_COLLAPSE_DURATION,max:MAGE_COLLAPSE_DURATION});trimEffects();};
+  setInterval(()=>{const s=mageRenderer.stats;$('mage-qa-status').textContent=mageRenderer.failed?'立体渲染失败 · 已安全回退':!mageRenderer.ready?'正在加载立体渲染器':`冰晶 ${s.crystals} · 碎片 ${s.chips} · 绘制 ${s.drawCalls} · CPU ${s.cpuMs.toFixed(1)}ms / GPU ${s.gpuMs==null?'不可测':s.gpuMs.toFixed(1)+'ms'} · ${s.fps?.toFixed(0)||'—'} FPS · 最近命中 ${mageInspectionHits} · ${mageInspectionHold===null?'原速实战':'定格 '+mageInspectionHold.toFixed(2)+'s'}`;},200);
+}
 if(localQaSafe&&runtimeParams.has('world-qa')){
   const panel=document.createElement('div');panel.className='world-qa-panel';panel.innerHTML='<span>本机回归测试</span><button id="qa-clear-room">清理当前战场</button><button id="qa-replay-ice">重播冰法特效</button>';document.body.append(panel);
   $('qa-clear-room').onclick=()=>{
@@ -951,7 +986,7 @@ resolvePlayerSkill=(name,point,kind,unstable,castOrigin=null)=>{
     screenShake=Math.max(screenShake,1.8);cameraZoom=Math.max(cameraZoom,.028);hitStop=Math.max(hitStop,.028);tone(218,.18,'triangle',.026);tone(735,.14,'sine',.018);if(typeof setTimeout==='function')setTimeout(()=>tone(980,.09,'triangle',.015),45);
   }else{
     const radius=skillDamageRadius(name,kind);const candidates=enemies.filter(enemy=>enemy.hp>0&&circleAreaHits(point,radius,enemy));marks=candidates.map(enemy=>({x:enemy.x,y:enemy.y}));heroSkillSignature(name,kind,point,marks);
-    candidates.forEach(enemy=>hit(enemy,1.05,2.5));screenShake=Math.max(screenShake,1.8);tone(275,.3);
+    candidates.forEach(enemy=>hit(enemy,1.05,2.5));mageInspectionHits=candidates.length;screenShake=Math.max(screenShake,1.8);tone(275,.3);
   }
   if(p.talents?.includes('echo'))p.nextAttackBonus=1.4;
 };
